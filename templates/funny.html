@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<style>
+    #mid{
+    position: relative;
+    width: 600px;
+    height: 200px;
+    }
+    #image{
+    height:64x;
+    width:64px;
+    }
+    #image2{
+    position:absolute;
+    top:45px;
+    left : 301px;
+    height:64x;
+    width:64px;
+    }
+    #gate {
+    background-image: url("http://5starsdesign.be/bg2.png");
+    position: absolute;
+    height: 50px;
+    width: 100%;
+    left: 0px;
+    top: 130px;
+    text-align: center;
+    font-family: "Arial Black", Gadget, sans-serif;
+    font-weight: bold;
+    font-size: 40px;
+    line-height: 50px;
+    background-color:yellow;
+    text-transform: uppercase;
+    background-size: 50px 50px;
+    color: white;
+    text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+    }
+</style>
+<body>
+
+
+<center>
+    <div id="mid">
+        <p><img src="https://nest.com/support/images/misc-assets-icons/settings-icon.png" id="image"/>
+        <img src="https://nest.com/support/images/misc-assets-icons/settings-icon.png" id="image2"/></p>
+    </div>
+</center>
+    <div id="gate">Under Construction</div>
+        
+        
+
+<!-- js files connector -->    
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ url_for('static', path='funny.js')}}"></script>
+
+</body>
+</html>

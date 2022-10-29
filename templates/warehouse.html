@@ -1,0 +1,189 @@
+{% extends "baseauth.html" %}
+
+{% block title %}
+{% endblock %}
+
+{% block col1 %}
+{% endblock %}
+
+{% block col2 %}
+<h1 style="text-align:center">MAGAZYN</h1>
+<h3 style="text-align:center">stany</h3>
+
+  {% if msg %}
+  <div class="alert alert-success" role="alert">
+    {{ msg }}
+  </div>
+  {% endif %}
+
+  {% for error in errors %}
+  <div class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+  {% endfor %}
+
+<form method="post">
+  <div class="input-group mb-3">
+    <span class="input-group-text" id="inputGroup-sizing-default">szukana fraza:</span>
+    <input type="text" class="form-control" name="searchbar" value="{{search_item}}" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+  </div>
+</form>
+
+<table class="table table-hover border" style="color:cadetblue; background:#102131; text-align:center">
+  <thead>
+    <tr>
+      <th scope="col">id</th>
+      <th scope="col">nazwa</th>
+      <th scope="col">referencja</th>
+      <th scope="col">producent</th>
+      <th scope="col">kod</th>
+      <th scope="col">stan</th>
+      <th scope="col">stan min.</th>
+      <th scope="col">zakup</th>
+      <th scope="col">sprzedaż</th>
+      <th scope="col">używany</th>
+      <!-- <th scope="col">opis</th> -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+  <tr style="color:#102131; background:cadetblue" onclick="show_param('{{ item.description }}')">
+      <td>{{ item.id }}</td>
+      <td>{{ item.name }}</td>
+      <td>{{ item.reference }}</td>
+      <td>{{ item.manufacturer }}</td>
+      <td>{{ item.code }}</td>
+      <td>{{ item.stack }}</td>
+      <td>{{ item.stack_min }}</td>
+      <td>{{ item.buy }}</td>
+      <td>{{ item.sell }}</td>
+      <td>{{ item.used }}</td>
+      <!-- <td>{{ item.description }}</td> -->
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if target %}
+
+<div class="container" style="text-align:center; margin-top:5rem">
+  <i><b>Towar o ID: </b></i>
+  <input class="border-0" style="width:2rem; text-align:center; color:cadetblue; background:#102131" id="item_id" value="{{ target.0.id }}" disabled></input>
+</div>
+
+<div class="card" style="margin-top:1rem; color:black; background:cadetblue">
+  <div class="container text-center" style="margin-top:1rem">
+    <i><b>Ruch towaru: </b></i>
+  </div>
+  <hr>
+  <div class="row" style="text-align:center">
+    <div class="col"></div>
+    <div class="col-5"  style="text-align:center">
+      <div class="row">
+        <div class="col my-3" style="margin-left:2rem;">
+          <div class="input-group mb-3" style="max-width:7rem">
+            <span class="input-group-text" id="inputGroup-sizing-default">ilość:</span>
+            <input id="move" value="0" type="text" class="form-control" style="text-align:center" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+          </div>
+        </div>
+        <div class="col" style="text-align:center; margin-right:2rem">
+          <div style="text-align:right">
+              <button class="btn my-3" style="background:rgb(42, 209, 42)" id="editbtn1">dodaj / odejmij</button> 
+          </div> 
+        </div>
+      </div>
+    </div>
+    <div class="col"></div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:5rem; background:cadetblue; color:black">
+  <div class="container text-center" style="margin-top:1rem">
+    <i><b>Edycja towaru: </b></i>
+  </div>
+  <hr>
+  
+    <div class="row p-3">
+        <div class="col">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">nazwa</span>
+                <input required="True" name="name" value="{{ target.0.name }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">producent</span>
+                <input required="True" name="manufacturer" value="{{ target.0.manufacturer }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">referencja</span>
+                <input required="True" name="reference" value="{{ target.0.reference }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>                              
+        </div>
+        <div class="col">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">stan min.</span>
+                <input required="True" name="stack_min" value="{{ target.0.stack_min }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">zakup</span>
+                <input required="True" name="buy" value="{{ target.0.buy }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>   
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">cena</span>
+                <input required="True" name="sell" value="{{ target.0.sell }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>
+        </div>
+        <div class="col">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">opis</span>
+                <input name="description" value="{{ target.0.description }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">kod</span>
+                <input required="True" name="code" value="{{ target.0.code }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" name="used" type="checkbox" id="flexCheckDefault">
+                <label class="form-check-label" for="flexCheckDefault">
+                  Towar używany
+                </label>
+            </div>
+        </div>
+          <div style="text-align:center">
+              <button class="btn mb-3 border-1" style="background:orange" name="editbtn2" id="editbtn2">zatwierdź edycję</button> 
+          </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:1rem; color:black; background:cadetblue">
+  <div class="container text-center" style="margin-top:1rem">
+    <i><b>Usuwanie towar: </b></i>
+  </div>
+  <hr>
+  <div class="row" style="text-align:center">
+    <div class="col"></div>
+    <div class="col-5"  style="text-align:center">
+      <div style="text-align:center">
+          <button class="btn my-3" style="background:red" id="editbtn3"><b>USUŃ</b></button> 
+      </div> 
+    </div>
+    <div class="col"></div>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block col3 %}
+{% endblock %}
+
+{% block script %}
+<script>
+  function show_param(item) {
+    alert("OPIS:\n\n" + item);
+  };
+</script>
+<!-- js files connector -->    
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ url_for('static', path='warehouse.js')}}"></script>
+{% endblock %}

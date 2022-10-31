@@ -22,57 +22,48 @@
   </div>
   {% endfor %}
 
-  <!-- <form id="myform"> -->
-    <!-- <label for="field">Required, decimal number: </label>
-    <input class="left" id="field" name="field">
-    <br/>
-    <div style="text-align:center">
-        <button class="btn mb-3" id="button" style="background:rgb(42, 209, 42)"><b>zatwierdź</b></button> 
-    </div> 
-</form> -->
 
-<!-- <form class="row g-3 needs-validation" novalidate id="myform"> -->
-    <div class="row p-3">
+    <div class="row p-3" style="margin-top:5rem">
         <div class="col">
-            <div class="input-group mb-3">
+            <div class="input-group mb-5">
                 <span class="input-group-text" id="inputGroup-sizing-default">nazwa</span>
-                <input required="True" name="name" id="name" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                <input required name="name" id="name" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
             </div>
-            <div class="input-group mb-3">
+            <div class="input-group mb-5">
                 <label class="input-group-text" id="inputGroup-sizing-default">producent</label>
                 <input required="True" name="manufacturer" id="manufacturer" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
             </div>
-            <div class="input-group mb-3">
+            <div class="input-group mb-5">
                 <span class="input-group-text" id="inputGroup-sizing-default">referencja</span>
                 <input required="True" name="reference" id="reference" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
             </div>                              
         </div>
         <div class="col">
-            <div class="input-group mb-3">
+            <div class="input-group mb-5">
                 <span class="input-group-text" id="inputGroup-sizing-default">stan min.</span>
                 <input required="True" name="stack_min" id="stack_min" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
             </div>
-            <div class="input-group mb-3">
+            <div class="input-group mb-5">
                 <span class="input-group-text" id="inputGroup-sizing-default">zakup</span>
                 <input required="True" name="buy" id="buy" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 <span class="input-group-text" id="inputGroup-sizing-default">zł</span>
             </div>   
-            <div class="input-group mb-3">
+            <div class="input-group mb-5">
                 <span class="input-group-text" id="inputGroup-sizing-default">cena</span>
                 <input required="True" name="sell" id="sell" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
                 <span class="input-group-text" id="inputGroup-sizing-default">zł</span>
             </div>
         </div>
         <div class="col">
-            <div class="input-group mb-3">
+            <div class="input-group mb-5">
                 <span class="input-group-text" id="inputGroup-sizing-default">opis</span>
                 <input name="description" id="description" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
             </div>
-            <div class="input-group mb-3">
+            <div class="input-group mb-5">
                 <span class="input-group-text" id="inputGroup-sizing-default">kod</span>
                 <input required name="code" id="code" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
             </div>
-            <div class="form-check">
+            <div class="form-check" style="margin-left:25%">
                 <input class="form-check-input" name="used"  type="checkbox" id="isused">
                 <label class="form-check-label" for="isused">
                   <b>Towar używany</b>
@@ -84,7 +75,10 @@
             <button class="btn mb-3" id="button" style="background:rgb(42, 209, 42)"><b>zatwierdź</b></button> 
         </div> 
     </div>
-<!-- </form> -->
+    
+  <div class="card" style="text-align:center; background:cadetblue; margin-top: 8%">
+    <b><i class="" style="text-align:center; color:brown;" id="error"></i></b>
+  </div>
 
 {% endblock %}
 

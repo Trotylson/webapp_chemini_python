@@ -202,7 +202,7 @@ async def delete_item_row(request: Request, db:Session=Depends(get_db), token:st
 @router.put('/chemini-api/additem', tags=['warehouse'])
 async def add_item(request: Request, db:Session=Depends(get_db), token:str=Depends(oauth2_scheme)):
     """
-    Post new item
+    API PUT new item
     """
 
     packet = await request.json()
@@ -216,16 +216,35 @@ async def add_item(request: Request, db:Session=Depends(get_db), token:str=Depen
     _code = packet['code']
     _used = packet['used']
     
+    parameters = [_name, _manufacturer, _reference, _stack_min, _buy, _sell, _code]
+    for _value in parameters:
+        if str(_value).replace(" ","") == "" or _value == None:
+            return {
+                "response": "error", "msg": "PUSTE POLE TOWARU!\nPola takie jak nazwa, producent, referencja, stan minimalny, zakup, cena, kod nie mogą być puste!"} 
+    
+    name_ex = db.query(Item).filter((Item.name==_name) | (Item.reference==_name) | (Item.code==_name)).first()
+    if name_ex:
+        return {
+            "response": "error", "msg": f"ISTNIEJĄCA NAZWA, REFERENCJA LUB KOD!\nPodana nazwa {_name.upper()} istnieje już jako nazwa, referencja lub kod innego produktu!"}
+    reference_ex = db.query(Item).filter((Item.name==_reference) | (Item.reference==_reference) | (Item.code==_reference)).first()
+    if reference_ex:
+        return {
+            "response": "error", "msg": f"ISTNIEJĄCA NAZWA, REFERENCJA LUB KOD!\nPodana referencja {_reference} istnieje już jako nazwa, referencja lub kod innego produktu!"}
+    code_ex = db.query(Item).filter((Item.name==_code) | (Item.reference==_code) | (Item.code==_code)).first()
+    if code_ex:
+        return {
+            "response": "error", "msg": f"ISTNIEJĄCA NAZWA, REFERENCJA LUB KOD!\nPodany kod {_code} istnieje już jako nazwa, referencja lub kod innego produktu!"}
+    
     if not token:
-        return {"code": 401, "response": "no token"}
+        return {"response": "error", "msg": "NO TOKEN!\nNo authorization token!"}
     try:
         payload = jwt.decode(token, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
         user = db.query(User).filter(User.name==payload['sub']).first()
     except Exception as e:
-        return {"code": 401, "response": "invalid token"}
+        return {"response": "error", "msg": "INVALID TOKEN!\nInvalid authorization token construction!"}
         
     if not user:
-        return {"code": 401, "response": "no user found"}
+        return {"response": "error", "msg": "USER NOT FOUND!\nBad user in token!"}
     
     _stack_min = str(_stack_min).replace(",", ".")
     _sell = str(_sell).replace(",", ".")
@@ -234,13 +253,17 @@ async def add_item(request: Request, db:Session=Depends(get_db), token:str=Depen
     try:
         new_item = Item(name=_name,manufacturer=_manufacturer, reference=_reference, stack_min=float(_stack_min),
                     buy=float(_buy), sell=float(_sell), description=_description, code=_code, used=_used)
+    except ValueError:
+        return {
+            "response": "error", "msg": "BŁĄD WALIDACJI WARTOŚCI LICZBOWEJ!\nW polu dla wartości liczbowej (stan minimalny, zakup, cena) nie może pojawić się słowo!(stan minimalny, zakup, cena)"}
     except Exception as e:
-        return {"code": 500, "response": e}
+        return {"response": "error", "msg": f"{str(e)}"}
         
     try:
         db.add(new_item)
         db.commit()
         db.refresh(new_item)
-        return {"code": 200, "response": "success"}
+        return {
+            "response": "success", "msg": f"SUKCES!\n\nPoprawnie dodano kartotekę {_name} o nr referencyjnym {_reference}"}
     except Exception as e:
-        return {"code": 500, "response": e}
+        return {"response": "error", "msg": f"PROBLEM Z DODANIEM KARTOTEKI dla {_name}!\nOdpowiedź bazy danych:\n\n{str(e)}"}

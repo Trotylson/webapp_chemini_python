@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from libs.database import get_db
 from configparser import ConfigParser
 from jose import jwt
+from fastapi.datastructures import URL
 
 config = ConfigParser()
 config.read("config/config.ini")
@@ -66,7 +67,8 @@ async def login_user(response: Response, request:Request, db:Session=Depends(get
                 data, config.get("security", "jwt_secret_key"), algorithm=config.get("security", "algorithm")) # expires variable
             msg = "Login successfully."
             print(msg)
-            # response = templates.TemplateResponse("home.html", {"request": request, "msg": msg})
+            # resp_temp = templates.TemplateResponse("home.html", {"request": request, "msg": msg})
+            
             response = RedirectResponse(url="/warehouse")
             response.set_cookie(
                 key="access_token", value=f"Bearer {jwt_token}", httponly=True)
@@ -92,9 +94,3 @@ def logout(response: Response, request: Request):
     response.set_cookie(key="access_token", value="come-to-the-dark-side-we-have-cookies")
     return response
 
-@router.get("/home")
-def home(request: Request):
-    """
-    home page
-    """
-    return templates.TemplateResponse("home.html", {"request": request})

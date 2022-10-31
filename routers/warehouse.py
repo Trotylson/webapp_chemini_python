@@ -78,8 +78,12 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
     if not user:
         errors.append("User not found.")
         return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    items = db.query(Item).where(
-        (Item.name==search_item) | (Item.reference==search_item) | (Item.code==search_item) | (Item.manufacturer==search_item))
+    try:
+        items = db.query(Item).where(
+            (Item.name==search_item) | (Item.reference==search_item) | (Item.code==search_item) | (Item.manufacturer==search_item))
+    except Exception:
+        errors.append("Problem z bazą danych.")
+        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
     if not search_item:
         items = db.query(Item).all()
     items_list = []
@@ -126,55 +130,3 @@ def call_additem_template(request: Request, db:Session=Depends(get_db)):
         errors.append("You have to login first.")
         return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
 
-@router.post('/additem', tags=['warehouse'])
-async def add_item(request: Request, db:Session=Depends(get_db)):
-    """
-    Post new item template
-    """
-    errors = []
-
-    item = await request.form()
-    name=item.get("name").upper()
-    manufacturer=item.get("manufacturer").upper()
-    reference=item.get("reference")
-    stack_min=item.get("stack_min")
-    buy=item.get("buy")
-    sell=item.get("sell")
-    description=item.get("description")
-    code=item.get("code")
-    used=item.get("used")
-    
-    if used:
-        used=True
-    
-    try:
-        token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-        print(token)
-        if not token:
-            errors.append("You have to login first.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-        if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        
-        new_item = Item(name=name,manufacturer=manufacturer, reference=reference, stack_min=stack_min, buy=buy, sell=sell, description=description, code=code, used=used)
-        try:
-            db.add(new_item)
-            db.commit()
-            db.refresh(new_item)
-            msg = f"Kartoteka dla {name} została utworzona pomyślnie."
-            return templates.TemplateResponse("additem.html", {"request": request, "msg": msg})
-        except Exception:
-            errors.append(
-                f"Kartoteka dla {name} nie została utworzona! Prawdopodobne problemy: referencja lub kod towaru istnieje już w bazie, któryś z wpisów nie jest poprawny (np. zastosowanie przy cenie ',' zamiast '.' lub wpisanie tekstu w miejscu gdzie powinny być cyfry (stan minimalny, zakup, cena, kod))")
-            # print(errors)
-            return templates.TemplateResponse("additem.html", {"request": request, "errors": errors})
-
-        return templates.TemplateResponse(
-            "additem.html",{"request":request})
-    except Exception:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})

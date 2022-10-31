@@ -13,4 +13,9 @@ def root(request: Request):
     return templates.TemplateResponse("funny.html", {"request":request})
 
 
-
+@router.get("/home")
+def home(request: Request):
+    """
+    home page
+    """
+    return templates.TemplateResponse("home.html", {"request": request})

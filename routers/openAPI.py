@@ -65,6 +65,8 @@ async def edit_item_stack(request: Request, db:Session=Depends(get_db), token:st
     _id = packet['item_id']
     _quantity = packet['quantity']
     
+    errors = []
+    
     if not token:
         return {"code": 401, "response": "no token"}
     
@@ -81,31 +83,29 @@ async def edit_item_stack(request: Request, db:Session=Depends(get_db), token:st
     _stack = existing_item.first()
     db_stack = _stack.stack
     
+    print(type(int(_stack.stack_min)))
+    
     if db_stack:
         param_stack = db_stack + int(_quantity)
     else: param_stack = _quantity
     print(param_stack)
     payload = {
-        "id": _stack.id,
-        "stack":param_stack,
-        "name": _stack.name,
-        "manufacturer": _stack.manufacturer,
-        "reference": _stack.reference,
-        "code": _stack.code,
-        "description": _stack.description,
-        "stack_min": _stack.stack_min,
-        "buy": _stack.buy,
-        "sell": _stack.sell,
-        "used": _stack.used
+        "stack":param_stack
     }
 
-    try:
-        existing_item.update(payload)
-    except IntegrityError as e:
-        print(e)
-        return {"code": 500, "response": e}
-    
-    return {"code": 200, "response": "success"}
+    if int(db_stack)+int(_quantity) >= 0:
+        try:
+            existing_item.update(payload)
+            db.commit()
+        except IntegrityError as e:
+            print(e)
+            return {"code": 500, "response": e}
+        
+        return {"code": 200, "response": "success"}
+    else:
+        return {"code": 201, "response": "unsuccess"}
+        # errors.append("Nie można zdjąć ze stanu więcej towaru niż jest na magazynie!")
+        # return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
 
 
 @router.put('/chemini-api/item-update-all', tags=['item'])
@@ -116,6 +116,15 @@ async def update_item_params(request: Request, db:Session=Depends(get_db), token
     """
     packet = await request.json()
     _id = packet['item_id']
+    _name = packet['item_name']
+    _manufacturer = packet['manufacturer']
+    _reference = packet['reference']
+    _stack_min = packet['stack_min']
+    _buy = packet['buy']
+    _sell = packet['sell']
+    _description = packet['description']
+    _code = packet['code']
+    _used = packet['used']
 
     if not token:
         return {"code": 401, "response": "no token"}
@@ -133,21 +142,24 @@ async def update_item_params(request: Request, db:Session=Depends(get_db), token
     
     print(_item.name)
     payload = {
-        # "id": _item.id,
         "stack":_item.stack,
-        "name": _item.name,
-        "manufacturer": _item.manufacturer,
-        "reference": _item.reference,
-        "code": _item.code,
-        "description": _item.description,
-        "stack_min": _item.stack_min,
-        "buy": _item.buy,
-        "sell": _item.sell,
-        "used": _item.used
+        "name": _name.lower(),
+        "manufacturer": _manufacturer.lower(),
+        "reference": _reference,
+        "code": _code,
+        "description": _description,
+        "stack_min": _stack_min,
+        "buy": _buy,
+        "sell": _sell,
+        "used": _used
     }
+    
+    print(payload)
 
     try:
         existing_item.update(payload)
+        db.commit()
+        # db.refresh(Item)
     except IntegrityError as e:
         print(e)
         return {"code": 500, "response": e}
@@ -155,7 +167,7 @@ async def update_item_params(request: Request, db:Session=Depends(get_db), token
     return {"code": 200, "response": "success"}
 
 
-@router.post('/chemini-api/item-delete', tags=['item'])
+@router.delete('/chemini-api/item-delete-row', tags=['item'])
 async def delete_item_row(request: Request, db:Session=Depends(get_db), token:str=Depends(oauth2_scheme)):
     """
     API delete item row ::
@@ -178,9 +190,57 @@ async def delete_item_row(request: Request, db:Session=Depends(get_db), token:st
     item_to_delete = db.query(Item).filter(Item.id==_id)
 
     try:
-        db.delete(item_to_delete)
+        item_to_delete.delete()
+        db.commit()
     except IntegrityError as e:
         print(e)
         return {"code": 500, "response": e}
 
     return {"code": 200, "response": "success"}
+
+
+@router.put('/chemini-api/additem', tags=['warehouse'])
+async def add_item(request: Request, db:Session=Depends(get_db), token:str=Depends(oauth2_scheme)):
+    """
+    Post new item
+    """
+
+    packet = await request.json()
+    _name = packet['item_name']
+    _manufacturer = packet['manufacturer']
+    _reference = packet['reference']
+    _stack_min = packet['stack_min']
+    _buy = packet['buy']
+    _sell = packet['sell']
+    _description = packet['description']
+    _code = packet['code']
+    _used = packet['used']
+    
+    if not token:
+        return {"code": 401, "response": "no token"}
+    try:
+        payload = jwt.decode(token, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except Exception as e:
+        return {"code": 401, "response": "invalid token"}
+        
+    if not user:
+        return {"code": 401, "response": "no user found"}
+    
+    _stack_min = str(_stack_min).replace(",", ".")
+    _sell = str(_sell).replace(",", ".")
+    _buy = str(_buy).replace(",", ".")
+    
+    try:
+        new_item = Item(name=_name,manufacturer=_manufacturer, reference=_reference, stack_min=float(_stack_min),
+                    buy=float(_buy), sell=float(_sell), description=_description, code=_code, used=_used)
+    except Exception as e:
+        return {"code": 500, "response": e}
+        
+    try:
+        db.add(new_item)
+        db.commit()
+        db.refresh(new_item)
+        return {"code": 200, "response": "success"}
+    except Exception as e:
+        return {"code": 500, "response": e}

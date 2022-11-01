@@ -62,6 +62,8 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
     """
     search = await request.form()
     search_item = search.get("searchbar")
+    search_used = search.get("searchUsed")
+        
     errors = []
 
     token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
@@ -79,13 +81,22 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
         errors.append("User not found.")
         return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
     try:
-        items = db.query(Item).where(
-            (Item.name==search_item) | (Item.reference==search_item) | (Item.code==search_item) | (Item.manufacturer==search_item))
+        if search_used:
+            items = db.query(Item).where((Item.used==True) &
+               ((Item.name.like(f"%{search_item}%")) | (Item.reference.like(f"%{search_item}%")) | (Item.code.like(f"%{search_item}%")) | (Item.manufacturer.like(f"%{search_item}%"))))
+        else:
+            items = db.query(Item).where(
+            (Item.name.like(f"%{search_item}%")) | (Item.reference.like(f"%{search_item}%")) | (Item.code.like(f"%{search_item}%")) | (Item.manufacturer.like(f"%{search_item}%")))
+
     except Exception:
         errors.append("Problem z bazą danych.")
         return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
     if not search_item:
-        items = db.query(Item).all()
+        if search_used:
+            items =  db.query(Item).where(Item.used==True)
+        else:
+            items = db.query(Item).all()
+        
     items_list = []
     for item in items:
         if item.used:
@@ -97,6 +108,8 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
         search_item=''
     
     if len(items_list) == 1:
+        items_list[0].description = items_list[0].description.replace("_g_nl_", "\n")
+        # print(items_list[0].description)
         return templates.TemplateResponse(
             "warehouse.html",{"request": request, "search_item": search_item, "items": items_list, "target":items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
     return templates.TemplateResponse(
@@ -130,3 +143,26 @@ def call_additem_template(request: Request, db:Session=Depends(get_db)):
         errors.append("You have to login first.")
         return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
 
+
+@router.get('/demand', tags=['warehouse'])
+def get_page_with_demand(request: Request, db:Session=Depends(get_db)):
+    """
+    Call additem page
+    """
+    errors = []
+    try:
+        token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
+        if not token:
+            errors.append("You have to login first.")
+            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+        if not user:
+            errors.append("User not found.")
+            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return templates.TemplateResponse(
+            "demand.html",{"request":request, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+    except Exception:
+        errors.append("You have to login first.")
+        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})

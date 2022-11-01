@@ -22,17 +22,14 @@ $('#editbtn1').click(function() {
     .then(result => {
         console.log(JSON.stringify(result))
         
-        var server_code = JSON.stringify(result['code'])
-        var server_response = JSON.stringify(result['response'])
-        if (server_code == 200) {
-            alert("SUKCES!\nPomyślnie zmieniono stan magazynowy!")
+        var server_response = result['response']
+        var server_msg = result['msg']
+        if (server_response == "success") {
+            alert(server_msg)
             location.replace("/warehouse");}
-        else if(server_code == 201) {
-            alert("BŁĄD!\nNie można zdjąć ze stanu więcej towaru niż jest na magazynie!")}
-        else if(server_code == 401) {
-            alert("BŁĄD!\nKomunikat serwera: " + server_response)}
-        else if(server_code == 500) {
-            alert("BŁĄD!\nKomunikat serwera: " + server_response)}
+        else if(server_response == "error") {
+            resp = server_msg.replace(/\n/g, "<br />")
+            document.getElementById('moveError').innerHTML = resp;}
         else {
             alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
     });
@@ -60,7 +57,7 @@ $('#editbtn2').click(function() {
         "stack_min": stack_min,
         "buy": buy,
         "sell": sell,
-        "description": description,
+        "description": description = description.replace(/\n/g, "_g_nl_"),
         "code": code,
         "used": used
     };
@@ -75,15 +72,14 @@ $('#editbtn2').click(function() {
     .then(result => {
         console.log(JSON.stringify(result))
         
-        var server_code = JSON.stringify(result['code'])
-        var server_response = JSON.stringify(result['response'])
-        if (server_code == 200) {
-            alert("SUKCES!\nPomyślnie zmieniono stan magazynowy!")
+        var server_response = result['response']
+        var server_msg = result['msg']
+        if (server_response == "success") {
+            alert(server_msg)
             location.replace("/warehouse");}
-        else if(server_code == 401) {
-            alert("BŁĄD!\nKomunikat serwera: " + server_response)}
-        else if(server_code == 500) {
-            alert("BŁĄD!\nKomunikat serwera: " + server_response)}
+        else if(server_response == "error") {
+            resp = server_msg.replace(/\n/g, "<br />")
+            document.getElementById('editError').innerHTML = resp;}
         else {
             alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
     });
@@ -104,15 +100,14 @@ $('#editbtn3').click(function() {
     .then(result => {
         console.log(JSON.stringify(result))
         
-        var server_code = JSON.stringify(result['code'])
-        var server_response = JSON.stringify(result['response'])
-        if (server_code == 200) {
-            alert("SUKCES!\nPomyślnie usunięto!")
+        var server_response = result['response']
+        var server_msg = result['msg']
+        if (server_response == "success") {
+            alert(server_msg)
             location.replace("/warehouse");}
-        else if(server_code == 401) {
-            alert("BŁĄD!\nKomunikat serwera: " + server_response)}
-        else if(server_code == 500) {
-            alert("BŁĄD!\nKomunikat serwera: " + server_response)}
+        else if(server_response == "error") {
+            resp = server_msg.replace(/\n/g, "<br />")
+            document.getElementById('deleteError').innerHTML = resp;}
         else {
             alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
     });

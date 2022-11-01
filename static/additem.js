@@ -17,6 +17,8 @@ $('#button').click(function() {
   code = $('#code').val();
   used = document.getElementById("isused").checked;
 
+
+
   data = {
     "item_name": item_name,
     "manufacturer": manufacturer,
@@ -24,7 +26,7 @@ $('#button').click(function() {
     "stack_min": stack_min,
     "buy": buy,
     "sell": sell,
-    "description": description,
+    "description": description = description.replace(/\n/g, "_g_nl_"),
     "code": code,
     "used": used
   };

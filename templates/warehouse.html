@@ -1,14 +1,15 @@
 {% extends "baseauth.html" %}
 
 {% block title %}
+<title>.:CHEMINI:. - magazyn</title>
 {% endblock %}
 
 {% block col1 %}
 {% endblock %}
 
 {% block col2 %}
-<h1 style="text-align:center">MAGAZYN</h1>
-<h3 style="text-align:center">stany</h3>
+<h1 style="text-align:center"><b>MAGAZYN</b></h1>
+<h4 style="text-align:center"><i>STAN MAGAZYNOWY</i></h4>
 
   {% if msg %}
   <div class="alert alert-success" role="alert">
@@ -22,14 +23,30 @@
   </div>
   {% endfor %}
 
-<form method="post">
+<form method="post" style="margin-top:6%">
   <div class="input-group mb-3">
-    <span class="input-group-text" id="inputGroup-sizing-default">szukana fraza:</span>
-    <input type="text" class="form-control" name="searchbar" value="{{search_item}}" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+    <span class="input-group-text" id="inputGroup-sizing-default">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+      </svg>
+      <!-- szukana fraza: -->
+    </span>
+    <input type="text" class="form-control" name="searchbar" id="searchbar" value="{{search_item}}" style="margin-right:2%" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+    
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="searchUsed">
+      <label class="form-check-label" for="isused">
+        <b><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shuffle" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M0 3.5A.5.5 0 0 1 .5 3H1c2.202 0 3.827 1.24 4.874 2.418.49.552.865 1.102 1.126 1.532.26-.43.636-.98 1.126-1.532C9.173 4.24 10.798 3 13 3v1c-1.798 0-3.173 1.01-4.126 2.082A9.624 9.624 0 0 0 7.556 8a9.624 9.624 0 0 0 1.317 1.918C9.828 10.99 11.204 12 13 12v1c-2.202 0-3.827-1.24-4.874-2.418A10.595 10.595 0 0 1 7 9.05c-.26.43-.636.98-1.126 1.532C4.827 11.76 3.202 13 1 13H.5a.5.5 0 0 1 0-1H1c1.798 0 3.173-1.01 4.126-2.082A9.624 9.624 0 0 0 6.444 8a9.624 9.624 0 0 0-1.317-1.918C4.172 5.01 2.796 4 1 4H.5a.5.5 0 0 1-.5-.5z"/>
+          <path d="M13 5.466V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192zm0 9v-3.932a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192z"/>
+        </svg> Towar używany
+        </b>
+      </label>
+    </div>
   </div>
 </form>
 
-<table class="table table-hover border" style="color:cadetblue; background:#102131; text-align:center">
+<table class="table table-hover border" style="color:cadetblue; background:#102131; text-align:center; margin-top:3%">
   <thead>
     <tr>
       <th scope="col">id</th>
@@ -48,18 +65,26 @@
   </thead>
   <tbody>
     {% for item in items %}
-  <tr style="color:#102131; background:cadetblue" >
+  <tr style="color:#102131; background:cadetblue" onclick="select_reference('{{ item.reference }}')">
       <td>{{ item.id }}</td>
-      <td>{{ item.name }}</td>
-      <td>{{ item.reference }}</td>
-      <td>{{ item.manufacturer }}</td>
-      <td>{{ item.code }}</td>
-      <td>{{ item.stack }}</td>
+      <td style="text-align:left"><b>{{ item.name }}</b></td>
+      <td style="text-align:center"><b>{{ item.reference }}</b></td>
+      <td style="text-align:center">{{ item.manufacturer }}</td>
+      <td style="text-align:center">{{ item.code }}</td>
+      <td><b>{{ item.stack }}</b></td>
       <td>{{ item.stack_min }}</td>
       <td>{{ item.buy }}</td>
-      <td>{{ item.sell }}</td>
+      <td><b>{{ item.sell }}</b></td>
       <td>{{ item.used }}</td>
-      <td><button class="btn btn-info" onclick="show_param('{{ item.description }}')"><b>-</b></button></td>
+      <td>
+        <button class="btn btn-info" onclick="show_description('{{ item.description }}')">
+          <b>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-pulse" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1H3a1 1 0 0 0-1 1V14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V3.5a1 1 0 0 0-1-1h-1v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Zm6.979 3.856a.5.5 0 0 0-.968.04L7.92 10.49l-.94-3.135a.5.5 0 0 0-.895-.133L4.232 10H3.5a.5.5 0 0 0 0 1h1a.5.5 0 0 0 .416-.223l1.41-2.115 1.195 3.982a.5.5 0 0 0 .968-.04L9.58 7.51l.94 3.135A.5.5 0 0 0 11 11h1.5a.5.5 0 0 0 0-1h-1.128L9.979 5.356Z"/>
+            </svg>
+          </b>
+        </button>
+      </td>
       <!-- <td>{{ item.description }}</td> -->
     </tr>
     {% endfor %}
@@ -77,7 +102,11 @@
   <div class="container text-center" style="margin-top:1rem">
     <i><b>Ruch towaru: </b></i>
   </div>
-  <hr>
+
+  <div class="card" style="text-align:center; background:cadetblue; margin:3%">
+    <b><i class="" style="text-align:center; color:brown;" id="moveError"></i></b>
+  </div>
+
   <div class="row" style="text-align:center">
     <div class="col"></div>
     <div class="col-5"  style="text-align:center">
@@ -90,7 +119,13 @@
         </div>
         <div class="col" style="text-align:center; margin-right:2rem">
           <div style="text-align:right">
-              <button class="btn my-3" style="background:rgb(42, 209, 42)" id="editbtn1"><b>zatwierdź ruch</b></button> 
+              <button class="btn my-3" style="background:rgb(42, 209, 42)" id="editbtn1">
+                <b>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-check-square-fill" viewBox="0 0 16 16">
+                    <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm10.03 4.97a.75.75 0 0 1 .011 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.75.75 0 0 1 1.08-.022z"/>
+                  </svg>  ZAWTIERDŹ RUCH
+                </b>
+              </button> 
           </div> 
         </div>
       </div>
@@ -103,7 +138,10 @@
   <div class="container text-center" style="margin-top:1rem">
     <i><b>Edycja towaru: </b></i>
   </div>
-  <hr>
+
+  <div class="card" style="text-align:center; background:cadetblue; margin:3%">
+    <b><i class="" style="text-align:center; color:brown;" id="editError"></i></b>
+  </div>
   
     <div class="row p-3">
         <div class="col">
@@ -114,17 +152,23 @@
             <div class="input-group mb-3">
                 <span class="input-group-text" id="inputGroup-sizing-default">producent</span>
                 <input required="True" id="manufacturer" value="{{ target.0.manufacturer }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
-            </div>
+            </div>                             
+        </div>
+        <div class="col">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="inputGroup-sizing-default">referencja</span>
                 <input required="True" id="reference" value="{{ target.0.reference }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
-            </div>                              
-        </div>
-        <div class="col">
+            </div> 
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">kod</span>
+                <input required="True" id="code" value="{{ target.0.code }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="inputGroup-sizing-default">stan min.</span>
                 <input required="True" id="stack_min" value="{{ target.0.stack_min }}" type="number" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
             </div>
+        </div>
+        <div class="col">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="inputGroup-sizing-default">zakup</span>
                 <input required="True" id="buy" value="{{ target.0.buy }}" type="number" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
@@ -134,25 +178,34 @@
                 <input required="True" id="sell" value="{{ target.0.sell }}" type="number" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
             </div>
         </div>
-        <div class="col">
-            <div class="input-group mb-3">
-                <span class="input-group-text" id="inputGroup-sizing-default">opis</span>
-                <input id="description" value="{{ target.0.description }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
-            </div>
-            <div class="input-group mb-3">
-                <span class="input-group-text" id="inputGroup-sizing-default">kod</span>
-                <input required="True" id="code" value="{{ target.0.code }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
-            </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="inputGroup-sizing-default">opis</span>
+            <textarea id="description" value="comply('{{ target.0.description }}')" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">{{ target.0.description }}</textarea>
+        </div>
+        <div class="row">
+          <div class="col">
+          </div>
+          <div class="col">
+          </div>
+          <div class="col">
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="isused">
                 <label class="form-check-label" for="isused">
                   <b>Towar używany</b>
                 </label>
             </div>
-        </div>
-          <div style="text-align:center">
-              <button class="btn mb-3 border-1" style="background:orange" name="editbtn2" id="editbtn2"><b>zatwierdź edycję</b></button> 
+            <div style="text-align:left; margin-top:2rem">
+                <button class="btn mb-3 border-1" style="background:orange" name="editbtn2" id="editbtn2">
+                  <b>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+                      <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+                      <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+                    </svg> ZAWTIERDŹ EDYCJĘ
+                  </b>
+                </button> 
+            </div>
           </div>
+        </div>
     </div>
 </div>
 
@@ -160,13 +213,23 @@
   <div class="container text-center" style="margin-top:1rem">
     <i><b>Usuwanie towar: </b></i>
   </div>
-  <hr>
+
+  <div class="card" style="text-align:center; background:cadetblue; margin:3%">
+    <b><i class="" style="text-align:center; color:brown;" id="deleteError"></i></b>
+  </div>
+
   <div class="row" style="text-align:center">
     <h5><b>{{ target.0.name }} {{ target.0.reference }}</b></h5>
     <div class="col"></div>
     <div class="col-5"  style="text-align:center">
       <div style="text-align:center">
-          <button class="btn my-3" style="background:red" id="editbtn3"><b>USUŃ</b></button> 
+          <button class="btn my-3" style="background:red" id="editbtn3">
+            <b>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+              </svg> USUŃ
+            </b>
+          </button> 
       </div> 
     </div>
     <div class="col"></div>
@@ -182,8 +245,17 @@
 
 {% block script %}
 <script>
-  function show_param(item) {
-    alert("OPIS:\n\n" + item);
+  function show_description(item) {
+    _item = item.replace(/_g_nl_/g, "\n")
+    alert("OPIS:\n\n" + _item);
+  };
+  function select_reference(item_reference){
+    console.log("item ref.: ", item_reference);
+    document.getElementById('searchbar').value = item_reference;
+  };
+  function comply(description){
+    _descryption = description.replace(/_g_nl_/g, "\n")
+    return _descryption;
   };
 </script>
 <!-- js files connector -->    

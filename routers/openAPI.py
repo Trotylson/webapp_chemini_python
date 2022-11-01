@@ -65,30 +65,28 @@ async def edit_item_stack(request: Request, db:Session=Depends(get_db), token:st
     _id = packet['item_id']
     _quantity = packet['quantity']
     
-    errors = []
-    
     if not token:
-        return {"code": 401, "response": "no token"}
+        return {"response": "error", "msg": "NO TOKEN!\nNo authorization token!"}
     
     try:
         payload = jwt.decode(token, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
         user = db.query(User).filter(User.name==payload['sub']).first()
     except Exception as e:
-        return {"code": 401, "response": "invalid token"}
+        return {"response": "error", "msg": "INVALID TOKEN!\nInvalid authorization token construction!"}
         
     if not user:
-        return {"code": 401, "response": "no user found"}
+        return {"response": "error", "msg": "USER NOT FOUND!\nBad user in token!"}
 
     existing_item = db.query(Item).filter(Item.id==_id)
     _stack = existing_item.first()
     db_stack = _stack.stack
     
-    print(type(int(_stack.stack_min)))
+    # print(type(int(_stack.stack_min)))
     
     if db_stack:
         param_stack = db_stack + int(_quantity)
     else: param_stack = _quantity
-    print(param_stack)
+    # print(param_stack)
     payload = {
         "stack":param_stack
     }
@@ -97,15 +95,13 @@ async def edit_item_stack(request: Request, db:Session=Depends(get_db), token:st
         try:
             existing_item.update(payload)
             db.commit()
+            return {"response": "success", "msg": f"POLECENIE WYKONANE POMYŚLNIE!\n\nRuch towaru: {_quantity}"}
         except IntegrityError as e:
             print(e)
-            return {"code": 500, "response": e}
-        
-        return {"code": 200, "response": "success"}
+            return {"response": "error", "response": f"Database response: {str(e)}"}
     else:
-        return {"code": 201, "response": "unsuccess"}
-        # errors.append("Nie można zdjąć ze stanu więcej towaru niż jest na magazynie!")
-        # return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return {"response": "error", "msg": "BŁĄD ILOŚCI!\nNie można zdjąć ze stanu więcej towaru niż jest na magazynie!"}
+        
 
 
 @router.put('/chemini-api/item-update-all', tags=['item'])
@@ -125,24 +121,39 @@ async def update_item_params(request: Request, db:Session=Depends(get_db), token
     _description = packet['description']
     _code = packet['code']
     _used = packet['used']
+    
 
+    parameters = {"nazwa": _name, "producent": _manufacturer, "referencja": _reference, "stan minimalny": _stack_min, "zakup": _buy, "cena": _sell, "kod": _code}
+    for param in parameters:
+        if str(parameters[param]).replace(" ","") == "" or parameters[param] == None:
+            return {
+                "response": "error", "msg": f"PUSTE POLE TOWARU!\nPole {param.upper()} nie może być puste!"} 
+    
+    if int(_stack_min) < 0:
+        return {"response": "error",
+                "msg": "BŁĄD ILOŚCI STANU MINIMALNEGO!\nStan minimalny nie może być mniejszy od 0!"}
+    
     if not token:
-        return {"code": 401, "response": "no token"}
+        return {"response": "error", "msg": "NO TOKEN!\nNo authorization token!"}
     try:
         payload = jwt.decode(token, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
         user = db.query(User).filter(User.name==payload['sub']).first()
     except Exception as e:
-        return {"code": 401, "response": "invalid token"}
+        return {"response": "error", "msg": "INVALID TOKEN!\nInvalid authorization token construction!"}
         
     if not user:
-        return {"code": 401, "response": "no user found"}
+        return {"response": "error", "msg": "USER NOT FOUND!\nBad user in token!"}
+    
+    _stack_min = str(_stack_min).replace(",", ".")
+    _sell = str(_sell).replace(",", ".")
+    _buy = str(_buy).replace(",", ".")
 
     existing_item = db.query(Item).filter(Item.id==_id)
     _item = existing_item.first()
     
-    print(_item.name)
+    # print(_item.name)
     payload = {
-        "stack":_item.stack,
+        # "stack":_item.stack,
         "name": _name.lower(),
         "manufacturer": _manufacturer.lower(),
         "reference": _reference,
@@ -153,18 +164,26 @@ async def update_item_params(request: Request, db:Session=Depends(get_db), token
         "sell": _sell,
         "used": _used
     }
-    
-    print(payload)
 
     try:
         existing_item.update(payload)
         db.commit()
-        # db.refresh(Item)
+        payload['description'] = str(payload['description']).replace("_g_nl_", "\n")
+        return {
+            "response": "success",
+            "msg": f"""SUKCES!\n\nZmiany dla towaru {_name} zostały wprowadzone!\n\n
+            NAZWA: {payload['name']}\n
+            PRODUCENT: {payload['manufacturer']}\n
+            REFERENCJA: {payload['reference']}\n
+            KOD: {payload['code']}\n
+            STAN MIN.: {payload['stack_min']}\n
+            ZAKUP: {payload['buy']}\n
+            SPRZEDAŻ: {payload['sell']}\n
+            UŻYWANE: {payload['used']}\n
+            OPIS: \n{payload['description']}\n"""}
     except IntegrityError as e:
-        print(e)
-        return {"code": 500, "response": e}
-
-    return {"code": 200, "response": "success"}
+        print(e.__dict__['orig'])
+        return {"response": "error", "msg": f"PROBLEM Z EDYCJĄ KARTOTEKI!\nNazwa, referencja i kod to unikatowe wpisy i nie mogą się powtarzać.\nPrawdopodobnie podjęto próbę powielenia któregoś z nich!\nOdpowiedź bazy danych: {e.__dict__['orig']}"}
 
 
 @router.delete('/chemini-api/item-delete-row', tags=['item'])
@@ -177,26 +196,26 @@ async def delete_item_row(request: Request, db:Session=Depends(get_db), token:st
     _id = packet['item_id']
 
     if not token:
-        return {"code": 401, "response": "no token"}
+        return {"response": "error", "msg": "NO TOKEN!\nNo authorization token!"}
     try:
         payload = jwt.decode(token, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
         user = db.query(User).filter(User.name==payload['sub']).first()
     except Exception as e:
-        return {"code": 401, "response": "invalid token"}
+        return {"response": "error", "msg": "INVALID TOKEN!\nInvalid authorization token construction!"}
         
     if not user:
-        return {"code": 401, "response": "no user found"}
+        return {"response": "error", "msg": "USER NOT FOUND!\nBad user in token!"}
 
     item_to_delete = db.query(Item).filter(Item.id==_id)
-
+    
     try:
         item_to_delete.delete()
         db.commit()
+        return {
+            "response": "success", "msg": f"SUKCES!\n\nPoprawnie usunięto kartotekę towaru o id {_id}."}
     except IntegrityError as e:
         print(e)
-        return {"code": 500, "response": e}
-
-    return {"code": 200, "response": "success"}
+        return {"response": "error", "msg": f"Database response: {str(e)}"}
 
 
 @router.put('/chemini-api/additem', tags=['warehouse'])
@@ -216,11 +235,11 @@ async def add_item(request: Request, db:Session=Depends(get_db), token:str=Depen
     _code = packet['code']
     _used = packet['used']
     
-    parameters = [_name, _manufacturer, _reference, _stack_min, _buy, _sell, _code]
-    for _value in parameters:
-        if str(_value).replace(" ","") == "" or _value == None:
+    parameters = {"nazwa": _name, "producent": _manufacturer, "referencja": _reference, "stan minimalny": _stack_min, "zakup": _buy, "cena": _sell, "kod": _code}
+    for param in parameters:
+        if str(parameters[param]).replace(" ","") == "" or parameters[param] == None:
             return {
-                "response": "error", "msg": "PUSTE POLE TOWARU!\nPola takie jak nazwa, producent, referencja, stan minimalny, zakup, cena, kod nie mogą być puste!"} 
+                "response": "error", "msg": f"PUSTE POLE TOWARU!\nPole {param.upper()} nie może być puste!"} 
     
     name_ex = db.query(Item).filter((Item.name==_name) | (Item.reference==_name) | (Item.code==_name)).first()
     if name_ex:

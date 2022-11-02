@@ -195,6 +195,7 @@ def get_page_with_demand(request: Request, db:Session=Depends(get_db)):
                 demands.write(demands_new_list)
                 demands.write("\n\nCZĘŚCI UŻYWANE\n")
                 demands.write(demands_used_list)
+                demands.write("\n\n")
 
             # demands = open(f"{config.get('files', 'demands')}/zapotrzebowanie.txt", "w", encoding="utf-8")
             # demands.write(time.strftime("ZAPOTRZEBOWANIE MAGAZYNOWE NA DZIEŃ:   %Y/%M/%d %H:%M:%S\n\n"))

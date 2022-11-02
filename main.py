@@ -8,7 +8,7 @@ from libs.models import Base
 
 Base.metadata.create_all(bind=ENGINE)
 
-app = FastAPI(title="eRR0r_!", version="1.0", docs_url="/chemini-api", redoc_url="/chemini-redoc")
+app = FastAPI(title=".:CHEMINI:.", version="1.0", docs_url="/chemini-api", redoc_url="/chemini-redoc")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # origins = [

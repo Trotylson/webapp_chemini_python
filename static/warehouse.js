@@ -1,9 +1,11 @@
 
-main_headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJEYW1pYW4ifQ.49JmaHCvE7bePDuEylskD344AAULyLAB9FPf8hRwHTM'
-};
+// main_headers = {
+//     'Content-Type': 'application/json',
+//     'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJEYW1pYW4ifQ.49JmaHCvE7bePDuEylskD344AAULyLAB9FPf8hRwHTM'
+// };
 
+// let my_cookie = document.cookie;
+// alert(my_cookie)
 
 $('#editbtn1').click(function() {
     quantity = $('#move').val();
@@ -14,9 +16,9 @@ $('#editbtn1').click(function() {
         "item_id":item_id
     };
 
-    fetch("/chemini-api/item-update-stack",{
+    fetch("/warehouse/item-update-stack",{
     method: 'PUT',
-    headers: main_headers,
+    // headers: main_headers,
     body: JSON.stringify(data)})
     .then(response => response.json())
     .then(result => {
@@ -64,9 +66,9 @@ $('#editbtn2').click(function() {
 
     console.log(data)
 
-    fetch("/chemini-api/item-update-all",{
+    fetch("/warehouse/item-update-all",{
     method: 'PUT',
-    headers: main_headers,
+    // headers: main_headers,
     body: JSON.stringify(data)})
     .then(response => response.json())
     .then(result => {
@@ -92,9 +94,9 @@ $('#editbtn3').click(function() {
         "item_id": item_id
     };
 
-    fetch("/chemini-api/item-delete-row",{
+    fetch("/warehouse/item-delete-row",{
     method: 'DELETE',
-    headers: main_headers,
+    // headers: main_headers,
     body: JSON.stringify(data)})
     .then(response => response.json())
     .then(result => {

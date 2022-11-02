@@ -1,8 +1,8 @@
 // Kartoteka nie została utworzona! Prawdopodobne problemy: referencja lub kod towaru istnieje już w bazie, któryś z wpisów nie jest poprawny (np. zastosowanie przy cenie ',' zamiast '.' lub wpisanie tekstu w miejscu gdzie powinny być cyfry (stan minimalny, zakup, cena, kod))
-main_headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJEYW1pYW4ifQ.49JmaHCvE7bePDuEylskD344AAULyLAB9FPf8hRwHTM'
-};
+// main_headers = {
+//     'Content-Type': 'application/json',
+//     'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJEYW1pYW4ifQ.49JmaHCvE7bePDuEylskD344AAULyLAB9FPf8hRwHTM'
+// };
 
 
 $('#button').click(function() {
@@ -33,9 +33,9 @@ $('#button').click(function() {
 
   console.log(data)
 
-  fetch("/chemini-api/additem",{
+  fetch("/warehouse/additem",{
   method: 'PUT',
-  headers: main_headers,
+  // headers: main_headers,
   body: JSON.stringify(data)})
   .then(response => response.json())
   .then(result => {

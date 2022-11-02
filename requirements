@@ -7,3 +7,4 @@ pydantic
 passlib[bcrypt]
 SQLAlchemy
 python-jose
+tabulate

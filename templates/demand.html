@@ -9,10 +9,79 @@
 
 {% block col2 %}
 <div style="text-align:center">
-  <h1>User {{ user }}</h1>
-  <h4><b>user status:</b> {{ active_status }}</h4>
-  <h4><b>admin:</b> {{ is_admin }}</h4>
+  <h1><b>MAGAZYN</b></h1>
+  <h4><i>ZAPOTRZEBOWANIE MAGAZYNOWE</i></h4>
 </div>
+
+<div class="row" style="margin-top:5%">
+    <div class="col">
+        <div class="container" style="text-align:center">
+            <h5><i><b>Towar nowy<hr></b></i></h5>
+        </div>
+        <table class="table table-hover border" style="color:cadetblue; background:#102131; text-align:center; margin-top:3%">
+            <thead>
+              <tr>
+                <th scope="col">id</th>
+                <th scope="col">nazwa</th>
+                <th scope="col">referencja</th>
+                <th scope="col">producent</th>
+                <th scope="col">kod</th>
+                <th scope="col">stan</th>
+                <th scope="col">stan min.</th>
+                <th scope="col">zakup</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in new_items %}
+                    <tr style="color:#102131; background:cadetblue">
+                        <td>{{ item.id }}</td>
+                        <td style="text-align:left"><b>{{ item.name }}</b></td>
+                        <td style="text-align:center"><b>{{ item.reference }}</b></td>
+                        <td style="text-align:center">{{ item.manufacturer }}</td>
+                        <td style="text-align:center">{{ item.code }}</td>
+                        <td><b>{{ item.stack }}</b></td>
+                        <td>{{ item.stack_min }}</td>
+                        <td>{{ item.buy }}</td>
+                    </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+    </div>
+    <div class="col">
+        <div class="container" style="text-align:center">
+            <h5><i><b>Towar używany<hr></b></i></h5>
+        </div>
+        <table class="table table-hover border" style="color:cadetblue; background:#102131; text-align:center; margin-top:3%">
+            <thead>
+              <tr>
+                <th scope="col">id</th>
+                <th scope="col">nazwa</th>
+                <th scope="col">referencja</th>
+                <th scope="col">producent</th>
+                <th scope="col">kod</th>
+                <th scope="col">stan</th>
+                <th scope="col">stan min.</th>
+                <th scope="col">zakup</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in used_items %}
+                    <tr style="color:#102131; background:cadetblue">
+                        <td>{{ item.id }}</td>
+                        <td style="text-align:left"><b>{{ item.name }}</b></td>
+                        <td style="text-align:center"><b>{{ item.reference }}</b></td>
+                        <td style="text-align:center">{{ item.manufacturer }}</td>
+                        <td style="text-align:center">{{ item.code }}</td>
+                        <td><b>{{ item.stack }}</b></td>
+                        <td>{{ item.stack_min }}</td>
+                        <td>{{ item.buy }}</td>
+                    </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block col3 %}

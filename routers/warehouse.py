@@ -7,6 +7,8 @@ from libs.database import get_db
 from sqlalchemy.exc import IntegrityError
 from configparser import ConfigParser
 from jose import jwt
+from tabulate import tabulate
+import time
 
 
 config = ConfigParser()
@@ -108,10 +110,11 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
         search_item=''
     
     if len(items_list) == 1:
-        items_list[0].description = items_list[0].description.replace("_g_nl_", "\n")
+        # items_list[0].description = items_list[0].description.replace("_g_nl_", "\n")
+        reg_description = items_list[0].description.replace("_g_nl_", "\n")
         # print(items_list[0].description)
         return templates.TemplateResponse(
-            "warehouse.html",{"request": request, "search_item": search_item, "items": items_list, "target":items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+            "warehouse.html",{"request": request, "reg_description":reg_description, "search_item": search_item, "items": items_list, "target":items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
     return templates.TemplateResponse(
         "warehouse.html",{"request":request, "search_item": search_item, "items": items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
 
@@ -161,8 +164,39 @@ def get_page_with_demand(request: Request, db:Session=Depends(get_db)):
         if not user:
             errors.append("User not found.")
             return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        
+        # items = db.query(Item).where(Item.stack<=Item.stack_min)
+        items_new = db.query(Item).where((Item.used==False) & (Item.stack<=Item.stack_min))
+        items_used = db.query(Item).where((Item.used==True) & (Item.stack<=Item.stack_min))
+        try:
+            
+            column_names = ["id", "nazwa", "referencja", "producent", "kod", "stan", "stan min.", "zakup"]
+            df = []
+            for item in items_new:
+                line = [item.id, item.name, item.reference, item.manufacturer, item.code, item.stack, item.stack_min, item.buy]
+                df.append(line)
+            # demands_new_list = tabulate(df, headers=column_names)
+            demands_new_list = tabulate(df, headers=column_names, tablefmt="fancy_grid")
+            
+            df = []
+            for item in items_used:
+                line = [item.id, item.name, item.reference, item.manufacturer, item.code, item.stack, item.stack_min, item.buy]
+                df.append(line)
+            # demands_used_list = tabulate(df, headers=column_names)
+            demands_used_list = tabulate(df, headers=column_names, tablefmt="fancy_grid")
+            
+            demands = open(f"{config.get('files', 'demands')}/zapotrzebowanie.txt", "w", encoding="utf-8")
+            demands.write(time.strftime("ZAPOTRZEBOWANIE MAGAZYNOWE NA DZIEŃ:   %Y/%M/%d %H:%M:%S\n\n"))
+            demands.write("CZĘŚCI NOWE\n")
+            demands.write(demands_new_list)
+            demands.write("\n\nCZĘŚCI UŻYWANE\n")
+            demands.write(demands_used_list)
+            demands.close()
+        except Exception as e:
+            print(e)
+        
         return templates.TemplateResponse(
-            "demand.html",{"request":request, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+            "demand.html",{"request":request, "used_items": items_used, "new_items": items_new, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
     except Exception:
         errors.append("You have to login first.")
         return templates.TemplateResponse("home.html", {"request": request, "errors": errors})

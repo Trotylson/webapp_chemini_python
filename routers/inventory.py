@@ -42,6 +42,7 @@ def inventory_template(request: Request, db:Session=Depends(get_db)):
     for x_item in inv_table:
         item_table.append(
             {
+                "id": x_item.id,
                 "reference": x_item.reference,
                 "code": x_item.code,
                 "item_id": x_item.item_id,
@@ -81,11 +82,13 @@ async def add_to_inventory(request: Request, db:Session=Depends(get_db)):
     if search_by_reference:
         item = db.query(Item).filter(Item.reference==search_item).first()
         print("searching by reference")
-        # print(item)
+        # if item not exist
+        error = f"Nie znaleziono towaru o referencji {search_item}!"
     else:
         item = db.query(Item).filter(Item.code==search_item).first()
         print("searching by code")
-        # print(item)
+        # it item not exist
+        error = f"Nie znaleziono towaru o kodzie {search_item}!"
         
     # db.query(InvTable).delete()
     # db.commit()
@@ -101,6 +104,7 @@ async def add_to_inventory(request: Request, db:Session=Depends(get_db)):
     for x_item in inv_table:
         item_table.append(
             {
+                "id": x_item.id,
                 "reference": x_item.reference,
                 "code": x_item.code,
                 "item_id": x_item.item_id,
@@ -115,10 +119,10 @@ async def add_to_inventory(request: Request, db:Session=Depends(get_db)):
     item_table.reverse()
     # print(item_table)
         
-    if item or item==None:
+    if item or search_item.replace(' ','')=='':
         return templates.TemplateResponse('/inventory.html', {"request": request, "item_count": item_count, "items": item_table, "username": user.name})
     
-    return templates.TemplateResponse('/inventory.html', {"request": request, "item_count": item_count, "items": item_table, "error": f"Nie znaleziono towaru {search_item}!", "username": user.name})
+    return templates.TemplateResponse('/inventory.html', {"request": request, "item_count": item_count, "items": item_table, "error": error, "username": user.name})
 
 
 @router.post('/inventory/reset', tags=['inventory'])
@@ -204,7 +208,7 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
         _item = db.query(Item).filter(Item.id==row).first()
         inventory_value += (_item.buy * inventory_stacks[row])
     
-    warehouse_financial_state = warehouse_value - inventory_value
+    warehouse_financial_state = inventory_value - warehouse_value
     
     print("inventory stacks: ", inventory_stacks)
     print("warehouse REstacks: ", warehouse_stacks)
@@ -213,12 +217,54 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     print("warehouse value: ", warehouse_value)
     print("warehouse financial state: ", warehouse_financial_state)
     
-    for _id in inventory_stacks.keys():
-        existing_item = db.query(Item).filter(Item.id==_id)
-        existing_item.update({'stack': inventory_stacks[_id]})
+    # database = db.query(Item).all()
+    for db_item in database:
+        if db_item.id in inventory_stacks.keys():
+            print(db_item.id)
+            existing_item = db.query(Item).filter(Item.id==db_item.id)
+            existing_item.update({'stack': inventory_stacks[db_item.id]})
+        else:
+            existing_item = db.query(Item).filter(Item.id==db_item.id)
+            existing_item.update({'stack': 0})
+
+    
+    # return 0
+    # for _id in inventory_stacks.keys():
+    #     existing_item = db.query(Item).filter(Item.id==_id)
+    #     existing_item.update({'stack': inventory_stacks[_id]})
     db.commit()
     
     db.query(InvTable).delete()
     db.commit()
     
-    return {"response": "success", "msg": "test api udany :)"}
+    return {
+        "response": "success",
+        "msg": f"SUKCES!\n\nWynik inwentaryzacji:\nWartość towaru inwentaryzowanego:    {inventory_value}\nWartość magazynu przed inwentaryzacją:    {warehouse_value}\n\nRóżnica wartości stanu magazynowego:    {warehouse_financial_state}"
+        }
+
+
+@router.delete('/delete_row_from_list/{item_id}', tags=['inventory'])
+def delete_row_from_list(item_id: int, request: Request, db: Session=Depends(get_db)):
+    print(item_id)
+    errors = []
+
+    token = request.cookies.get("access_token")
+    if not token:
+        errors.append("You have to login first.")
+        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+    scheme,_,param = token.partition(" ")
+    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+    user = db.query(User).filter(User.name==payload['sub']).first()
+    if not user:
+        errors.append("User not found.")
+        return RedirectResponse(url="/")
+
+    try:
+        db.query(InvTable).filter(InvTable.id==item_id).delete()
+        db.commit()
+        return {"response": "success", "msg": f"SUKCES!\nPoprawnie usunięto pozycję!"}
+
+    except Exception as e:
+        return {"response": "error", "msg": f"Błąd bazy danych:\n{str(e)}"}
+
+

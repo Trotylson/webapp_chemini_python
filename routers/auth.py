@@ -23,7 +23,7 @@ def login_page(request: Request, db: Session=Depends(get_db)):
     """
     login page
     """
-    errors = []
+
     token = request.cookies.get("access_token")
     # print(token)
     if not token:
@@ -37,8 +37,6 @@ def login_page(request: Request, db: Session=Depends(get_db)):
             user = db.query(User).filter(User.name==payload['sub']).first()
             if not user:
                 return templates.TemplateResponse("login.html", {"request": request})
-            # end of part
-            # return templates.TemplateResponse("home.html", {"request": request, "msg": f"{user.name}, your session is active."})
             return RedirectResponse(url="/warehouse")
     except Exception:
         return templates.TemplateResponse("login.html", {"request": request})
@@ -67,7 +65,6 @@ async def login_user(response: Response, request:Request, db:Session=Depends(get
                 data, config.get("security", "jwt_secret_key"), algorithm=config.get("security", "algorithm")) # expires variable
             msg = "Login successfully."
             print(msg)
-            # resp_temp = templates.TemplateResponse("home.html", {"request": request, "msg": msg})
             
             response = RedirectResponse(url="/warehouse")
             response.set_cookie(
@@ -89,8 +86,8 @@ def logout(response: Response, request: Request):
     logout
     """
     msg = "You logged out successfully."
-    # response = templates.TemplateResponse("home.html", {"request": request, "msg" : msg})
-    response = RedirectResponse(url="/", background={"msg" : msg})
-    response.set_cookie(key="access_token", value="come-to-the-dark-side-we-have-cookies")
+    response = RedirectResponse(url="/")
+    response.delete_cookie(key='access_token')
+    # response.set_cookie(key="access_token", value="come-to-the-dark-side-we-have-cookies")
     return response
 

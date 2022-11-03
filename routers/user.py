@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from libs.models import User
 from libs.hashing import Hasher
 from sqlalchemy.orm import Session
@@ -25,26 +26,21 @@ def user_info(request: Request, db:Session=Depends(get_db)):
     """
     Actual user inforamtion
     """
-    errors = []
+
+    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
+    if not token:
+        return RedirectResponse("/")
     try:
-        token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-        if not token:
-            errors.append("You have to login first.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        # this part of code is for get token and decode info from token
         scheme,_,param = token.partition(" ")
         payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        # print(payload) or print(payload['sub'])
         user = db.query(User).filter(User.name==payload['sub']).first()
-        if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        # end of part
-        return templates.TemplateResponse(
-            "userinfo.html",{"request":request, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
     except Exception:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
+    if not user:
+        return RedirectResponse("/")
+
+    return templates.TemplateResponse(
+        "userinfo.html",{"request":request, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
 
 
 @router.get("/register", include_in_schema=False)

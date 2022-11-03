@@ -24,18 +24,18 @@ hasher = Hasher()
 @router.get('/inventory', tags=['inventory'])
 def inventory_template(request: Request, db:Session=Depends(get_db)):
 
-    errors = []
 
     token = request.cookies.get("access_token")
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except:
+        RedirectResponse("/")
     if not user:
-        errors.append("User not found.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
         
     inv_table = db.query(InvTable)
     item_table = []
@@ -62,18 +62,18 @@ def inventory_template(request: Request, db:Session=Depends(get_db)):
 @router.post("/inventory", tags=["inventory"])
 async def add_to_inventory(request: Request, db:Session=Depends(get_db)):
     
-    errors = []
-
     token = request.cookies.get("access_token")
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except:
+        RedirectResponse("/")
     if not user:
-        errors.append("User not found.")
-        return RedirectResponse(url="/")
+        return RedirectResponse("/")
+     
     
     search = await request.form()
     search_item = search.get("searchbar")
@@ -128,18 +128,18 @@ async def add_to_inventory(request: Request, db:Session=Depends(get_db)):
 @router.post('/inventory/reset', tags=['inventory'])
 def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     
-    errors = []
-
     token = request.cookies.get("access_token")
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except:
+        RedirectResponse("/")
     if not user:
-        errors.append("User not found.")
-        return RedirectResponse(url="/")
+        return RedirectResponse("/")
+     
     
     try:
         db.query(InvTable).delete()
@@ -152,18 +152,18 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
 @router.post('/inventory/accept', tags=['inventory'])
 def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     
-    errors = []
-
     token = request.cookies.get("access_token")
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except:
+        RedirectResponse("/")
     if not user:
-        errors.append("User not found.")
-        return RedirectResponse(url="/")
+        return RedirectResponse("/")
+     
     
     warehouse_diferences = {}
     inventory_value = 0
@@ -171,6 +171,7 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     
     inventory_stacks = {}
     warehouse_stacks = {}
+    warehouse_over_none = {}
     
     # inventory_stacks
     inventory_db = db.query(InvTable).all()
@@ -195,7 +196,17 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
         if comparison in warehouse_stacks.keys():
             _item = db.query(Item).filter(Item.id==comparison).first()
             warehouse_stacks[comparison] -= inventory_stacks[comparison]
-            warehouse_diferences[_item.name] = (_item.buy *- warehouse_stacks[comparison])
+            # warehouse_diferences[_item.name] = (_item.buy *- warehouse_stacks[comparison])
+            # warehouse_over_none[_item.name] = (_item.stack - warehouse_stacks[comparison])
+
+
+
+    for _item in database:
+        if _item.id in inventory_stacks.keys():
+            _diference = inventory_stacks[_item.id] - _item.stack
+            if _diference != 0:
+                warehouse_over_none[_item.name]=_diference
+        
             
     
     # warehouse_value
@@ -216,6 +227,7 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     print("inventory value: ", inventory_value)
     print("warehouse value: ", warehouse_value)
     print("warehouse financial state: ", warehouse_financial_state)
+    print(f"overstand / none: ", warehouse_over_none)
     
     # database = db.query(Item).all()
     for db_item in database:
@@ -234,32 +246,32 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     db.commit()
     
     overstand_none_list = ''
-    for poz in warehouse_diferences.keys():
-        overstand_none_list += f"{poz}: {warehouse_diferences[poz]},- \n"
+    for poz in warehouse_over_none.keys():
+        overstand_none_list += f"{poz}: {warehouse_over_none[poz]} szt.\n"
 
-    overstand_none = f"NADSTANY / BRAKI:\n\n{overstand_none_list}"
+    overstand_none = f"nadstan / braki:\n\n{overstand_none_list}"
 
     return {
         "response": "success",
-        "msg": f"SUKCES!\n\nWynik inwentaryzacji:\n\n{overstand_none}\n\nWartość towaru inwentaryzowanego:    {inventory_value},-\nWartość magazynu przed inwentaryzacją:    {warehouse_value},-\n\nRóżnica wartości stanu magazynowego:    {warehouse_financial_state},-"
+        "msg": f"SUKCES!\n\nWYNIK INWENTARYZACJI:\n\n{overstand_none}\n\nWartość towaru inwentaryzowanego:    {inventory_value},-\nWartość magazynu przed inwentaryzacją:    {warehouse_value},-\n\nRóżnica wartości stanu magazynowego:    {warehouse_financial_state},-"
         }
 
 
 @router.delete('/delete_row_from_list/{item_id}', tags=['inventory'])
 def delete_row_from_list(item_id: int, request: Request, db: Session=Depends(get_db)):
-    print(item_id)
-    errors = []
-
+    
     token = request.cookies.get("access_token")
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except:
+        RedirectResponse("/")
     if not user:
-        errors.append("User not found.")
-        return RedirectResponse(url="/")
+        return RedirectResponse("/")
+     
 
     try:
         db.query(InvTable).filter(InvTable.id==item_id).delete()

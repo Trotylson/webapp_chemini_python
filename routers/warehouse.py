@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from libs.models import User, Item
 from libs.hashing import Hasher
 from sqlalchemy.orm import Session
@@ -27,34 +28,30 @@ def call_warehouse_template(request: Request, db:Session=Depends(get_db)):
     Call warehouse page
     """
     errors = []
+        
+    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
+    if not token:
+        return RedirectResponse("/")
     try:
-        token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-        if not token:
-            errors.append("You have to login first.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        # this part of code is for get token and decode info from token
         scheme,_,param = token.partition(" ")
         payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        # print(payload) or print(payload['sub'])
         user = db.query(User).filter(User.name==payload['sub']).first()
-        if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        # end of part
-        
-        items = db.query(Item).all()
-        items_list = []
-        for item in items:
-            if item.used == True:
-                item.used="Tak"
-            else: item.used="Nie"
-            items_list.append(item)
-
-        return templates.TemplateResponse(
-            "warehouse.html",{"request":request, "items": items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
     except Exception:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
+    if not user:
+        return RedirectResponse("/")
+
+        
+    items = db.query(Item).all()
+    items_list = []
+    for item in items:
+        if item.used == True:
+            item.used="Tak"
+        else: item.used="Nie"
+        items_list.append(item)
+
+    return templates.TemplateResponse(
+        "warehouse.html",{"request":request, "items": items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
 
 
 @router.post('/warehouse', tags=['warehouse'])
@@ -71,18 +68,16 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
 
     token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
     try:
         scheme,_,param = token.partition(" ")
         payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
         user = db.query(User).filter(User.name==payload['sub']).first()
     except Exception:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
     if not user:
-        errors.append("User not found.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
+
     try:
         if search_used:
             items = db.query(Item).where((Item.used==True) &
@@ -95,7 +90,7 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
 
     except Exception:
         errors.append("Problem z bazą danych.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return templates.TemplateResponse("warehouse.html", {"request": request, "errors": errors})
     if not search_item:
         if search_used:
             items =  db.query(Item).where(Item.used==True)
@@ -128,26 +123,21 @@ def call_additem_template(request: Request, db:Session=Depends(get_db)):
     """
     Call additem page
     """
-    errors = []
+    
+    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
+    if not token:
+        return RedirectResponse("/")
     try:
-        token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-        if not token:
-            errors.append("You have to login first.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        # this part of code is for get token and decode info from token
         scheme,_,param = token.partition(" ")
         payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        # print(payload) or print(payload['sub'])
         user = db.query(User).filter(User.name==payload['sub']).first()
-        if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        # end of part
-        return templates.TemplateResponse(
-            "additem.html",{"request":request, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
     except Exception:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
+    if not user:
+        return RedirectResponse("/")
+
+    return templates.TemplateResponse(
+        "additem.html",{"request":request, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
 
 
 @router.get('/demand', tags=['warehouse'])
@@ -155,59 +145,58 @@ def get_page_with_demand(request: Request, db:Session=Depends(get_db)):
     """
     Call additem page
     """
-    errors = []
+        
+    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
+    if not token:
+        return RedirectResponse("/")
     try:
-        token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-        if not token:
-            errors.append("You have to login first.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
         scheme,_,param = token.partition(" ")
         payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
         user = db.query(User).filter(User.name==payload['sub']).first()
-        if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-        
-        # items = db.query(Item).where(Item.stack<=Item.stack_min)
-        items_new = db.query(Item).where((Item.used==False) & (Item.stack<=Item.stack_min))
-        items_used = db.query(Item).where((Item.used==True) & (Item.stack<=Item.stack_min))
-        try:
-            
-            column_names = ["id", "nazwa", "referencja", "producent", "kod", "stan", "stan min.", "zakup"]
-            df = []
-            for item in items_new:
-                line = [item.id, item.name, item.reference, item.manufacturer, item.code, item.stack, item.stack_min, item.buy]
-                df.append(line)
-            # demands_new_list = tabulate(df, headers=column_names)
-            demands_new_list = tabulate(df, headers=column_names, tablefmt="fancy_grid")
-            
-            df = []
-            for item in items_used:
-                line = [item.id, item.name, item.reference, item.manufacturer, item.code, item.stack, item.stack_min, item.buy]
-                df.append(line)
-            # demands_used_list = tabulate(df, headers=column_names)
-            demands_used_list = tabulate(df, headers=column_names, tablefmt="fancy_grid")
-
-            _time = time.strftime('%d-%m-%Y')
-            demand_filepath = f"{config.get('files', 'demands')}/zapotrzebowanie {_time}.txt"
-            print(demand_filepath)
-
-            with open(f"{demand_filepath}", "w", encoding="utf-8") as demands:
-                demands.write(f"ZAPOTRZEBOWANIE MAGAZYNOWE NA DZIEŃ:   {_time}\n\n")
-                demands.write("CZĘŚCI NOWE\n")
-                demands.write(demands_new_list)
-                demands.write("\n\nCZĘŚCI UŻYWANE\n")
-                demands.write(demands_used_list)
-                demands.write("\n\n")
-
-        except Exception as e:
-            print(e)
-        
-        return templates.TemplateResponse(
-            "demand.html",{"request":request, "used_items": items_used, "new_items": items_new, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
     except Exception:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
+    if not user:
+        return RedirectResponse("/")
+
+        
+    # items = db.query(Item).where(Item.stack<=Item.stack_min)
+    items_new = db.query(Item).where((Item.used==False) & (Item.stack<=Item.stack_min))
+    items_used = db.query(Item).where((Item.used==True) & (Item.stack<=Item.stack_min))
+    try:
+        
+        column_names = ["id", "nazwa", "referencja", "producent", "kod", "stan", "stan min.", "zakup"]
+        df = []
+        for item in items_new:
+            line = [item.id, item.name, item.reference, item.manufacturer, item.code, item.stack, item.stack_min, item.buy]
+            df.append(line)
+        # demands_new_list = tabulate(df, headers=column_names)
+        demands_new_list = tabulate(df, headers=column_names, tablefmt="fancy_grid")
+        
+        df = []
+        for item in items_used:
+            line = [item.id, item.name, item.reference, item.manufacturer, item.code, item.stack, item.stack_min, item.buy]
+            df.append(line)
+        # demands_used_list = tabulate(df, headers=column_names)
+        demands_used_list = tabulate(df, headers=column_names, tablefmt="fancy_grid")
+
+        _time = time.strftime('%d-%m-%Y')
+        demand_filepath = f"{config.get('files', 'demands')}/zapotrzebowanie {_time}.txt"
+        print(demand_filepath)
+
+        with open(f"{demand_filepath}", "w", encoding="utf-8") as demands:
+            demands.write(f"ZAPOTRZEBOWANIE MAGAZYNOWE NA DZIEŃ:   {_time}\n\n")
+            demands.write("CZĘŚCI NOWE\n")
+            demands.write(demands_new_list)
+            demands.write("\n\nCZĘŚCI UŻYWANE\n")
+            demands.write(demands_used_list)
+            demands.write("\n\n")
+
+    except Exception as e:
+        print(e)
+    
+    return templates.TemplateResponse(
+        "demand.html",{"request":request, "used_items": items_used, "new_items": items_new, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+
 
 
 @router.put("/warehouse/item-update-stack", tags = ['warehouse'])
@@ -220,18 +209,19 @@ async def edit_item_stack(request: Request, db:Session=Depends(get_db)):
     _id = packet['item_id']
     _quantity = packet['quantity']
 
-    errors = []
 
     token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except Exception:
+        return RedirectResponse("/")
     if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
+
 
     existing_item = db.query(Item).filter(Item.id==_id)
     _stack = existing_item.first()
@@ -265,18 +255,18 @@ async def update_item_params(request: Request, db:Session=Depends(get_db)):
         headers = {'Accept': 'application/json', 'Authorization': 'Bearer token'}
     """
 
-    errors = []
-
     token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except Exception:
+        return RedirectResponse("/")
     if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
+
 
     packet = await request.json()
     _id = packet['item_id']
@@ -352,18 +342,18 @@ async def delete_item_row(request: Request, db:Session=Depends(get_db)):
     packet = await request.json()
     _id = packet['item_id']
 
-    errors = []
 
     token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except Exception:
+        return RedirectResponse("/")
     if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
 
     item_to_delete = db.query(Item).filter(Item.id==_id)
     
@@ -383,18 +373,17 @@ async def add_item(request: Request, db:Session=Depends(get_db)):
     API PUT new item
     """
 
-    errors = []
-
     token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
     if not token:
-        errors.append("You have to login first.")
-        return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
-    scheme,_,param = token.partition(" ")
-    payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-    user = db.query(User).filter(User.name==payload['sub']).first()
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except Exception:
+        return RedirectResponse("/")
     if not user:
-            errors.append("User not found.")
-            return templates.TemplateResponse("home.html", {"request": request, "errors": errors})
+        return RedirectResponse("/")
 
     packet = await request.json()
     _name = packet['item_name']

@@ -187,23 +187,19 @@ def get_page_with_demand(request: Request, db:Session=Depends(get_db)):
                 df.append(line)
             # demands_used_list = tabulate(df, headers=column_names)
             demands_used_list = tabulate(df, headers=column_names, tablefmt="fancy_grid")
-            
-            with open(f"{config.get('files', 'demands')}/zapotrzebowanie.txt", "w", encoding="utf-8") as demands:
-                demands = open(f"{config.get('files', 'demands')}/zapotrzebowanie.txt", "w", encoding="utf-8")
-                demands.write(time.strftime("ZAPOTRZEBOWANIE MAGAZYNOWE NA DZIEŃ:   %Y/%M/%d %H:%M:%S\n\n"))
+
+            _time = time.strftime('%d-%m-%Y')
+            demand_filepath = f"{config.get('files', 'demands')}/zapotrzebowanie {_time}.txt"
+            print(demand_filepath)
+
+            with open(f"{demand_filepath}", "w", encoding="utf-8") as demands:
+                demands.write(f"ZAPOTRZEBOWANIE MAGAZYNOWE NA DZIEŃ:   {_time}\n\n")
                 demands.write("CZĘŚCI NOWE\n")
                 demands.write(demands_new_list)
                 demands.write("\n\nCZĘŚCI UŻYWANE\n")
                 demands.write(demands_used_list)
                 demands.write("\n\n")
 
-            # demands = open(f"{config.get('files', 'demands')}/zapotrzebowanie.txt", "w", encoding="utf-8")
-            # demands.write(time.strftime("ZAPOTRZEBOWANIE MAGAZYNOWE NA DZIEŃ:   %Y/%M/%d %H:%M:%S\n\n"))
-            # demands.write("CZĘŚCI NOWE\n")
-            # demands.write(demands_new_list)
-            # demands.write("\n\nCZĘŚCI UŻYWANE\n")
-            # demands.write(demands_used_list)
-            # demands.close()
         except Exception as e:
             print(e)
         

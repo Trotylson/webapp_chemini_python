@@ -220,7 +220,7 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     # database = db.query(Item).all()
     for db_item in database:
         if db_item.id in inventory_stacks.keys():
-            print(db_item.id)
+            # print(db_item.id)
             existing_item = db.query(Item).filter(Item.id==db_item.id)
             existing_item.update({'stack': inventory_stacks[db_item.id]})
         else:
@@ -228,18 +228,20 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
             existing_item.update({'stack': 0})
 
     
-    # return 0
-    # for _id in inventory_stacks.keys():
-    #     existing_item = db.query(Item).filter(Item.id==_id)
-    #     existing_item.update({'stack': inventory_stacks[_id]})
     db.commit()
     
     db.query(InvTable).delete()
     db.commit()
     
+    overstand_none_list = ''
+    for poz in warehouse_diferences.keys():
+        overstand_none_list += f"{poz}: {warehouse_diferences[poz]},- \n"
+
+    overstand_none = f"NADSTANY / BRAKI:\n\n{overstand_none_list}"
+
     return {
         "response": "success",
-        "msg": f"SUKCES!\n\nWynik inwentaryzacji:\nWartość towaru inwentaryzowanego:    {inventory_value}\nWartość magazynu przed inwentaryzacją:    {warehouse_value}\n\nRóżnica wartości stanu magazynowego:    {warehouse_financial_state}"
+        "msg": f"SUKCES!\n\nWynik inwentaryzacji:\n\n{overstand_none}\n\nWartość towaru inwentaryzowanego:    {inventory_value},-\nWartość magazynu przed inwentaryzacją:    {warehouse_value},-\n\nRóżnica wartości stanu magazynowego:    {warehouse_financial_state},-"
         }
 
 

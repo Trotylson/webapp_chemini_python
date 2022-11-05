@@ -188,7 +188,7 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     database = db.query(Item).all()
     for db_item in database:
         warehouse_stacks[db_item.id] = db_item.stack
-    print("warehouse stacks: ", warehouse_stacks)
+    # print("warehouse stacks: ", warehouse_stacks)
     
     # warehouse_REstack
     # warehouse_diferences
@@ -206,6 +206,13 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
             _diference = inventory_stacks[_item.id] - _item.stack
             if _diference != 0:
                 warehouse_over_none[_item.name]=_diference
+            elif _item.stack == inventory_stacks[_item.id]:
+                pass
+            else:
+                warehouse_over_none[_item.name] = inventory_stacks[_item.id]
+        else:
+            if _item.stack != 0:
+                warehouse_over_none[_item.name] = -(_item.stack)
         
             
     
@@ -221,9 +228,9 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     
     warehouse_financial_state = inventory_value - warehouse_value
     
-    print("inventory stacks: ", inventory_stacks)
-    print("warehouse REstacks: ", warehouse_stacks)
-    print("(+ more / - less) warehouse diferences: ", warehouse_diferences)
+    # print("inventory stacks: ", inventory_stacks)
+    # print("warehouse REstacks: ", warehouse_stacks)
+    # print("(+ more / - less) warehouse diferences: ", warehouse_diferences)
     print("inventory value: ", inventory_value)
     print("warehouse value: ", warehouse_value)
     print("warehouse financial state: ", warehouse_financial_state)
@@ -251,9 +258,18 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
 
     overstand_none = f"nadstan / braki:\n\n{overstand_none_list}"
 
+    file_path = f"{config.get('files','inventory')}/inwentaryzacja {time.strftime('%d.%m.%Y')}.txt"
+
+    with open(file_path, "w", encoding=("utf-8")) as inventory_file:
+        inventory_file.write(f"Data wykonania: {time.strftime('%d/%m/%Y')}\n\n")
+        inventory_file.write(f"{overstand_none}\n\n")
+        inventory_file.write(f"Wartość inwentaryzacji:    {inventory_value},-\n")
+        inventory_file.write(f"Wartość magazynu przed inwentaryzacją:    {warehouse_value},-\n")
+        inventory_file.write(f"Różnica wartości stanu magazynowego:    {warehouse_financial_state},-\n")
+
     return {
         "response": "success",
-        "msg": f"SUKCES!\n\nWYNIK INWENTARYZACJI:\n\n{overstand_none}\n\nWartość towaru inwentaryzowanego:    {inventory_value},-\nWartość magazynu przed inwentaryzacją:    {warehouse_value},-\n\nRóżnica wartości stanu magazynowego:    {warehouse_financial_state},-"
+        "msg": f"SUKCES!\n\nWYNIK INWENTARYZACJI:\n\n{overstand_none}\n\nWartość inwentaryzacji:    {inventory_value},-\nWartość magazynu przed inwentaryzacją:    {warehouse_value},-\n\nRóżnica wartości stanu magazynowego:    {warehouse_financial_state},-"
         }
 
 

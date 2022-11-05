@@ -2,10 +2,10 @@ Data wykonania: 05/11/2022
 
 nadstan / braki:
 
-silon black: 1 szt.
-vc980: -1 szt.
+silon black: -1 szt.
+vc980: 1 szt.
 
 
-Wartość inwentaryzacji:    26.5,-
-Wartość magazynu przed inwentaryzacją:    21.990000000000002,-
-Różnica wartości stanu magazynowego:    4.509999999999998,-
+Wartość inwentaryzacji:    21.990000000000002,-
+Wartość magazynu przed inwentaryzacją:    26.5,-
+Różnica wartości stanu magazynowego:    -4.509999999999998,-

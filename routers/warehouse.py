@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from libs.models import User, Item
+from libs.models import User, Item, ItemsMoves
 from libs.hashing import Hasher
 from sqlalchemy.orm import Session
 from libs.database import get_db
@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from configparser import ConfigParser
 from jose import jwt
 from tabulate import tabulate
+from datetime import date
 import time
 
 
@@ -235,10 +236,16 @@ async def edit_item_stack(request: Request, db:Session=Depends(get_db)):
         "stack":param_stack
     }
 
+    if int(_quantity) == 0:
+        return {"response": "error", "msg": "BŁĄD ILOŚCI!\nZmiana ilości o 0 nic nie da!"} 
+
     if int(db_stack)+int(_quantity) >= 0:
         try:
             existing_item.update(payload)
+            item_move = ItemsMoves(item_id=_stack.id, quantity=int(_quantity), date=date.today())
+            db.add(item_move)
             db.commit()
+            db.refresh(item_move)
             return {"response": "success", "msg": f"POLECENIE WYKONANE POMYŚLNIE!\n\nRuch towaru: {_quantity}"}
         except IntegrityError as e:
             print(e)
@@ -438,4 +445,38 @@ async def add_item(request: Request, db:Session=Depends(get_db)):
     except Exception as e:
         return {"response": "error", "msg": f"PROBLEM Z DODANIEM KARTOTEKI dla {_name}!\nOdpowiedź bazy danych:\n\n{str(e)}"}
 
+
+@router.get("/view-item-moves/{item_id}", tags=['warehose'])
+async def view_item_moves(item_id: int, request: Request, db:Session=Depends(get_db)):
+
+    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
+    if not token:
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except Exception:
+        return RedirectResponse("/")
+    if not user:
+        return RedirectResponse("/")
+
+    try:
+        item_moves = db.query(ItemsMoves).filter(ItemsMoves.item_id==item_id)
+        item_table = []
+        for item in item_moves:
+            _index = {"date":  item.date, "item_id": item.item_id, "quantity": item.quantity}
+            item_table.append(
+                _index
+            )
+
+        item_table.reverse()
+
+
+        for item in item_table:
+            print(f"date: {item['date']}\nitem ID: {item['item_id']}\nquantity: {item['quantity']}")
+
+        return {"response": "success", "msg":item_table}
+    except Exception as e:
+        return {"response": "error", "msg": f"{str(e)}"}
 

@@ -1,5 +1,6 @@
 from libs.database import Base
-from sqlalchemy import Column, Integer, Boolean, String, Float
+from sqlalchemy import Column, Integer, Boolean, String, Float, Date
+import time
 
 class User(Base):
     __tablename__ = "users"
@@ -37,3 +38,11 @@ class InvTable(Base):
     stack = Column(Integer, nullable=False, default=1)
     added_by = Column(String, nullable=False)
     date = Column(String, nullable=False)
+
+class ItemsMoves(Base):
+    __tablename__ = "items_moves"
+
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    item_id = Column(Integer, nullable=False)
+    quantity = Column(Float, nullable=False)
+    date = Column(Date, nullable=False)

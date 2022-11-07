@@ -1,7 +1,10 @@
 body{
-    background:chocolate;
+    background: #102131;
+    color: cadetblue;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     background-size: cover;
     -o-background-size: cover;
 }
+
+

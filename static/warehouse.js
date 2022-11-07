@@ -7,6 +7,7 @@
 // let my_cookie = document.cookie;
 // alert(my_cookie)
 
+
 $('#editbtn1').click(function() {
     quantity = $('#move').val();
     item_id = $('#item_id').val();

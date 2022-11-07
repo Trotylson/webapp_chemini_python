@@ -114,6 +114,14 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
         # print(items_list[0].description)
         return templates.TemplateResponse(
             "warehouse.html",{"request": request, "reg_description":reg_description, "search_item": search_item, "items": items_list, "target":items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+    
+    # items_list2 = []
+    # for item in items_list:
+    #     print(item.__dict__['description'].replace("_g_nl_", "\n"))
+    #     item.__dict__['description'] = item.__dict__['description'].replace("_g_nl_", "<br \>")
+    #     items_list2.append(item)
+    # items_list.description.replace("_g_nl_", "\n")
+
     return templates.TemplateResponse(
         "warehouse.html",{"request":request, "search_item": search_item, "items": items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
 
@@ -480,3 +488,7 @@ async def view_item_moves(item_id: int, request: Request, db:Session=Depends(get
     except Exception as e:
         return {"response": "error", "msg": f"{str(e)}"}
 
+@router.get("/warehouse/view-item/{item_id}", tags=['warehouse'])
+def view_item(item_id: int, request: Request, db: Session=Depends(get_db)):
+    item = db.query(Item).filter(Item.id == item_id).first()
+    return templates.TemplateResponse("item.html", {"request": request, "item": item})

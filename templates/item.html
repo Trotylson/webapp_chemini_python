@@ -1,0 +1,249 @@
+{% extends "baseauth.html" %}
+
+{% block title %}
+  <title>.:CHEMINI:. kartoteka {{ item.name }}</title>
+{% endblock %}
+
+
+{% block col1 %}
+{% endblock %}
+
+{% block col2 %}
+<div>
+    <div class="row">
+        <div class="col" styl="text-align:left">
+            <h1><b>{{ item.name }}</b></h1>
+        </div>
+        <div class="col">
+            <div style="text-align:right">
+                <button class="btn my-3 btn-info" style="margin-right:1rem" id="myBtn">
+                  <b>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-clipboard-pulse" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1H3a1 1 0 0 0-1 1V14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V3.5a1 1 0 0 0-1-1h-1v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Zm6.979 3.856a.5.5 0 0 0-.968.04L7.92 10.49l-.94-3.135a.5.5 0 0 0-.895-.133L4.232 10H3.5a.5.5 0 0 0 0 1h1a.5.5 0 0 0 .416-.223l1.41-2.115 1.195 3.982a.5.5 0 0 0 .968-.04L9.58 7.51l.94 3.135A.5.5 0 0 0 11 11h1.5a.5.5 0 0 0 0-1h-1.128L9.979 5.356Z"/>
+                    </svg> OPIS
+                  </b>
+                </button>
+                <button class="btn my-3 btn-warning" style="margin-right:1rem" onclick="" id="editbtn3">
+                  <b>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
+                    </svg> REJESTR
+                  </b>
+                </button>
+                <button class="btn my-3" style="background:rgb(191, 13, 13)" onclick="delete_item('{{ item.id }}')" id="editbtn3">
+                  <b>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                      <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+                    </svg> USUŃ KARTOTEKĘ
+                  </b>
+                </button>
+            </div>
+        </div>
+    </div>
+  <hr>
+  <h5><b>ID: {{ item.reference }}</b></h4>
+  <h5><b>ref: {{ item.reference }}</b></h4>
+  <h5><b>prod: {{ item.manufacturer }}</b></h4>
+  <h5><b>kod: {{ item.code }}</b></h4>
+</div>
+
+
+<div class="card" style="margin-top:5rem; background:cadetblue; color:black">
+    <div class="container text-center" style="margin-top:1rem">
+      <i><b>Edycja towaru: </b></i>
+    </div>
+  
+    <div class="card" style="text-align:center; background:cadetblue; margin:3%">
+      <b><i class="" style="text-align:center; color:brown;" id="editError"></i></b>
+    </div>
+    
+      <div class="row p-3">
+          <div class="col">
+              <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">nazwa</span>
+                  <input required="True" id="name" value="{{ item.name }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+              <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">producent</span>
+                  <input required="True" id="manufacturer" value="{{ item.manufacturer }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>                             
+          </div>
+          <div class="col">
+              <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">referencja</span>
+                  <input required="True" id="reference" value="{{ item.reference }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div> 
+              <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">kod</span>
+                  <input required="True" id="code" value="{{ item.code }}" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+              <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">stan min.</span>
+                  <input required="True" id="stack_min" value="{{ item.stack_min }}" type="number" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+          </div>
+          <div class="col">
+              <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">zakup</span>
+                  <input required="True" id="buy" value="{{ item.buy }}" type="number" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>   
+              <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">cena</span>
+                  <input required="True" id="sell" value="{{ item.sell }}" type="number" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+              </div>
+          </div>
+          <div class="input-group mb-3">
+              <span class="input-group-text" id="inputGroup-sizing-default">opis</span>
+              <textarea id="description" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">{{ item.description }}</textarea>
+          </div>
+          <div class="row">
+            <div class="col">
+            </div>
+            <div class="col">
+            </div>
+            <div class="col">
+              <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="isused">
+                  <label class="form-check-label" for="isused">
+                    <b>Towar używany</b>
+                  </label>
+              </div>
+              <div style="text-align:left; margin-top:2rem">
+                  <button class="btn mb-3 border-1" style="background:orange" onclick="update_item('{{ item.id }}')" name="editbtn2" id="editbtn2">
+                    <b>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+                        <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+                      </svg> ZAWTIERDŹ EDYCJĘ
+                    </b>
+                  </button> 
+              </div>
+            </div>
+          </div>
+      </div>
+  </div>
+  
+<!-- The Modal -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="btn btn-info close"><b>ZAMKNIJ</b></span>
+        <h2 style="color:black; margin-top: 3%; text-align:center">{{ item.name }}</h2>
+        <p style="color:black; margin-top: 3%">{{ item.description }}</p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block col3 %}
+{% endblock %}
+
+{% block script %}
+<!-- js files connector -->
+<script>
+
+    function update_item(id) {
+    item_id = id
+    item_name = $('#name').val();
+    manufacturer = $('#manufacturer').val();
+    reference = $('#reference').val();
+    stack_min = $('#stack_min').val();
+    buy = $('#buy').val();
+    sell = $('#sell').val();
+    description = $('#description').val();
+    code = $('#code').val();
+    used = document.getElementById("isused").checked;
+
+    data = {
+        "item_id": item_id,
+        "item_name": item_name,
+        "manufacturer": manufacturer,
+        "reference": reference,
+        "stack_min": stack_min,
+        "buy": buy,
+        "sell": sell,
+        "description": description,
+        "code": code,
+        "used": used
+    };
+
+    console.log(data)
+
+    fetch("/warehouse/item-update-all",{
+    method: 'PUT',
+    body: JSON.stringify(data)})
+    .then(response => response.json())
+    .then(result => {
+        console.log(JSON.stringify(result))
+        
+        var server_response = result['response']
+        var server_msg = result['msg']
+        if (server_response == "success") {
+            alert(server_msg)}
+        else if(server_response == "error") {
+            resp = server_msg.replace(/\n/g, "<br />")
+            document.getElementById('editError').innerHTML = resp;}
+        else {
+            alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
+    });
+    };
+
+    function delete_item(id) {
+
+    data = {
+        "item_id": id
+    };
+
+    fetch("/warehouse/item-delete-row",{
+    method: 'DELETE',
+    // headers: main_headers,
+    body: JSON.stringify(data)})
+    .then(response => response.json())
+    .then(result => {
+        console.log(JSON.stringify(result))
+        
+        var server_response = result['response']
+        var server_msg = result['msg']
+        if (server_response == "success") {
+            alert(server_msg)}
+        else if(server_response == "error") {
+            resp = server_msg.replace(/\n/g, "<br />")
+            document.getElementById('deleteError').innerHTML = resp;}
+        else {
+            alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
+    });
+    };
+</script>
+
+<script>
+// test modal
+    // Get the modal
+    var modal = document.getElementById("myModal");
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on the button, open the modal
+    btn.onclick = function() {
+    modal.style.display = "block";
+    }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+    modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+    } 
+// endtest
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ url_for('static', path='item.js')}}"></script>
+{% endblock %}

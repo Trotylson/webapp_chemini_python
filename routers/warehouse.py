@@ -490,5 +490,36 @@ async def view_item_moves(item_id: int, request: Request, db:Session=Depends(get
 
 @router.get("/warehouse/view-item/{item_id}", tags=['warehouse'])
 def view_item(item_id: int, request: Request, db: Session=Depends(get_db)):
-    item = db.query(Item).filter(Item.id == item_id).first()
-    return templates.TemplateResponse("item.html", {"request": request, "item": item})
+    
+    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
+    if not token:
+        return RedirectResponse("/")
+    try:
+        scheme,_,param = token.partition(" ")
+        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
+        user = db.query(User).filter(User.name==payload['sub']).first()
+    except Exception:
+        return RedirectResponse("/")
+    if not user:
+        return RedirectResponse("/")
+
+    try:
+        item_moves = db.query(ItemsMoves).filter(ItemsMoves.item_id==item_id)
+        item_table = []
+        for item in item_moves:
+            _index = {"date":  item.date, "item_id": item.item_id, "quantity": item.quantity}
+            item_table.append(
+                _index
+            )
+
+        item_table.reverse()
+
+
+        for item in item_table:
+            print(f"date: {item['date']}\nitem ID: {item['item_id']}\nquantity: {item['quantity']}")
+
+        item = db.query(Item).filter(Item.id == item_id).first()
+        return templates.TemplateResponse("item.html", {"request": request, "item": item, "item_move": item_table})
+    
+    except Exception as e:
+        return {"response": "error", "msg": f"{str(e)}"}

@@ -4,7 +4,7 @@ class CheminiAPI():
     def __init__(self):
         pass
 
-    def autholizate(self, login, password):
+    def authorizate(self, login, password):
         """
         Receive user token authentication.
         :param login: user login
@@ -44,7 +44,7 @@ class CheminiAPI():
 
 if __name__ == '__main__':
     chemini = CheminiAPI()
-    token = chemini.autholizate("Damian", "damian")
+    token = chemini.authorizate("Damian", "damian")
     print(token)
     _token = token['access_token']
     token_type = token['token_type']

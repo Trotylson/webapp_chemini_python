@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 # from fastapi.middleware.cors import CORSMiddleware
-from routers import user, login, auth, common, warehouse, openAPI, inventory
+from routers import user, login, auth, common, warehouse, openAPI, inventory, admin
 from libs.database import ENGINE
 from libs.models import Base
 
@@ -31,4 +31,5 @@ app.include_router(auth.router)
 app.include_router(warehouse.router)
 app.include_router(openAPI.router)
 app.include_router(inventory.router)
+app.include_router(admin.router)
     

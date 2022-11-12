@@ -9,9 +9,9 @@
 
 {% block col2 %}
 <div style="text-align:center">
-  <h1>User {{ user }}</h1>
-  <h4><b>user status:</b> {{ active_status }}</h4>
-  <h4><b>admin:</b> {{ is_admin }}</h4>
+  <h1>User {{ user.name }}</h1>
+  <h4><b>user status:</b> {{ user.is_active }}</h4>
+  <h4><b>admin:</b> {{ user.is_admin }}</h4>
 </div>
 {% endblock %}
 

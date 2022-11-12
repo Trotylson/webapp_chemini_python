@@ -10,6 +10,7 @@ from configparser import ConfigParser
 from jose import jwt
 from tabulate import tabulate
 import time
+import libs.tokenizer as Tokenizer
 
 
 config = ConfigParser()
@@ -19,21 +20,14 @@ config.read("config/config.ini")
 router = APIRouter(include_in_schema=False)
 templates = Jinja2Templates(directory="templates")
 hasher = Hasher()
+tokenizer = Tokenizer.Tokenizer()
 
 
 @router.get('/inventory', tags=['inventory'])
 def inventory_template(request: Request, db:Session=Depends(get_db)):
 
-
     token = request.cookies.get("access_token")
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except:
-        RedirectResponse("/")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
         
@@ -56,21 +50,14 @@ def inventory_template(request: Request, db:Session=Depends(get_db)):
     item_count = len(item_table)
     item_table.reverse()
     
-    return templates.TemplateResponse("inventory.html", {"request": request, "item_count": item_count, "items": item_table, "username": user.name})
+    return templates.TemplateResponse("inventory.html", {"request": request, "item_count": item_count, "items": item_table, "user": user, "username": user.name})
 
 
 @router.post("/inventory", tags=["inventory"])
 async def add_to_inventory(request: Request, db:Session=Depends(get_db)):
     
     token = request.cookies.get("access_token")
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except:
-        RedirectResponse("/")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
      
@@ -120,23 +107,16 @@ async def add_to_inventory(request: Request, db:Session=Depends(get_db)):
     # print(item_table)
         
     if item or search_item.replace(' ','')=='':
-        return templates.TemplateResponse('/inventory.html', {"request": request, "item_count": item_count, "items": item_table, "username": user.name})
+        return templates.TemplateResponse('/inventory.html', {"request": request, "item_count": item_count, "items": item_table, "user": user, "username": user.name})
     
-    return templates.TemplateResponse('/inventory.html', {"request": request, "item_count": item_count, "items": item_table, "error": error, "username": user.name})
+    return templates.TemplateResponse('/inventory.html', {"request": request, "item_count": item_count, "items": item_table, "error": error, "user": user, "username": user.name})
 
 
 @router.post('/inventory/reset', tags=['inventory'])
 def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     
     token = request.cookies.get("access_token")
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except:
-        RedirectResponse("/")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
      
@@ -153,16 +133,9 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
 def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
     
     token = request.cookies.get("access_token")
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except:
-        RedirectResponse("/")
+    user = tokenizer.check_user(token, db)
     if not user:
-        return RedirectResponse("/")
+        return RedirectResponse("/inventory")
      
     
     warehouse_diferences = {}
@@ -277,14 +250,7 @@ def reset_inventory_list(request: Request, db:Session=Depends(get_db)):
 def delete_row_from_list(item_id: int, request: Request, db: Session=Depends(get_db)):
     
     token = request.cookies.get("access_token")
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except:
-        RedirectResponse("/")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
      

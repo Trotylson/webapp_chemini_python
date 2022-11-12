@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from configparser import ConfigParser
 from jose import jwt
 from routers.login import oauth2_scheme
+import libs.tokenizer as Tokenizer
 
 
 config = ConfigParser()
@@ -18,6 +19,7 @@ config.read("config/config.ini")
 router = APIRouter(include_in_schema=False)
 templates = Jinja2Templates(directory="templates")
 hasher = Hasher()
+tokenizer = Tokenizer.Tokenizer()
 
 
 
@@ -27,20 +29,13 @@ def user_info(request: Request, db:Session=Depends(get_db)):
     Actual user inforamtion
     """
 
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
     return templates.TemplateResponse(
-        "userinfo.html",{"request":request, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+        "userinfo.html",{"request":request, "user": user})
 
 
 @router.get("/register", include_in_schema=False)

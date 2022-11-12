@@ -44,13 +44,20 @@
             <h5 class="offcanvas-title" style="color:cadetblue" id="offcanvasDarkNavbarLabel"><b>MENU</b></h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
+
+          <hr style="margin-top: 1rem">
+          <div class="container">
+            zalogowany: <b><i>{{ user.name }}</i></b>
+          </div>
+          <hr>
+          
           <div class="offcanvas-body">
             <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+              <!--  -->
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" style="color:#779fa0" href="/warehouse" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6zm5-.793V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z"/>
-                    <path fill-rule="evenodd" d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z"/>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-boxes" viewBox="0 0 16 16">
+                    <path d="M7.752.066a.5.5 0 0 1 .496 0l3.75 2.143a.5.5 0 0 1 .252.434v3.995l3.498 2A.5.5 0 0 1 16 9.07v4.286a.5.5 0 0 1-.252.434l-3.75 2.143a.5.5 0 0 1-.496 0l-3.502-2-3.502 2.001a.5.5 0 0 1-.496 0l-3.75-2.143A.5.5 0 0 1 0 13.357V9.071a.5.5 0 0 1 .252-.434L3.75 6.638V2.643a.5.5 0 0 1 .252-.434L7.752.066ZM4.25 7.504 1.508 9.071l2.742 1.567 2.742-1.567L4.25 7.504ZM7.5 9.933l-2.75 1.571v3.134l2.75-1.571V9.933Zm1 3.134 2.75 1.571v-3.134L8.5 9.933v3.134Zm.508-3.996 2.742 1.567 2.742-1.567-2.742-1.567-2.742 1.567Zm2.242-2.433V3.504L8.5 5.076V8.21l2.75-1.572ZM7.5 8.21V5.076L4.75 3.504v3.134L7.5 8.21ZM5.258 2.643 8 4.21l2.742-1.567L8 1.076 5.258 2.643ZM15 9.933l-2.75 1.571v3.134L15 13.067V9.933ZM3.75 14.638v-3.134L1 9.933v3.134l2.75 1.571Z"/>
                   </svg> Magazyn
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
@@ -71,12 +78,34 @@
                   </li>
                 </ul>
               </li>
+              <!--  -->
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" style="color:#779fa0" href="/warehouse" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
+                    <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001z"/>
+                  </svg> Ruch towaru
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                  <li class="nav-item">
+                    <a class="dropdown-item" style="color:#779fa0" href="/items-input"><b>PZ</b> - przyjęcie magazynowe</a>
+                  </li>
+                  <hr class="dropdown-divider">
+                  <li class="nav-item">
+                    <a class="dropdown-item" style="color:#779fa0" href="/items-output"><b>WZ</b> - wydanie magazynowe</a>
+                  </li>
+                  <hr class="dropdown-divider">
+                  <li class="nav-item">
+                    <a class="dropdown-item" style="color:#779fa0" href="/vat-document"><b>FS</b> - faktura VAT sprzedaży</a>
+                  </li>
+                </ul>
+              </li>
+              <!--  -->
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" style="color:#779fa0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-file-person" viewBox="0 0 16 16">
                     <path d="M12 1a1 1 0 0 1 1 1v10.755S12 11 8 11s-5 1.755-5 1.755V2a1 1 0 0 1 1-1h8zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/>
                     <path d="M8 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                  </svg>  Użytkownik - opcje
+                  </svg>  {{ user.name }} - opcje
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
                   <li class="nav-item">
@@ -88,15 +117,9 @@
                   </li>
                 </ul>
               </li>
+              <!--  -->
+              <hr style="margin-top: 1rem">
               <li class="nav-item">
-                <a class="nav-link" style="color:#779fa0; margin-top:1rem" href="/logout">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-power" viewBox="0 0 16 16">
-                    <path d="M7.5 1v7h1V1h-1z"/>
-                    <path d="M3 8.812a4.999 4.999 0 0 1 2.578-4.375l-.485-.874A6 6 0 1 0 11 3.616l-.501.865A5 5 0 1 1 3 8.812z"/>
-                  </svg> Wyloguj
-                </a>
-              </li>
-              <li class="nav-item" style="margin-top: 3rem">
                 <a class="nav-link" style="color:brown" href="/admin">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-lock-fill" viewBox="0 0 16 16">
                     <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
@@ -106,9 +129,10 @@
               <!-- <li class="nav-item">
                 <a class="nav-link" style="color:rgb(42, 209, 42)" href="/register">Register</a>
               </li> -->
+              <!--  -->
               <li class="nav-item dropdown" >
                 <a class="nav-link dropdown-toggle" style="color:yellowgreen" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-terminal-fill" viewBox="0 0 16 16">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-terminal-fill" viewBox="0 0 16 16">
                     <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3zm9.5 5.5h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm-6.354-.354a.5.5 0 1 0 .708.708l2-2a.5.5 0 0 0 0-.708l-2-2a.5.5 0 1 0-.708.708L4.793 6.5 3.146 8.146z"/>
                   </svg> Dokumentacja API
                 </a>
@@ -121,6 +145,15 @@
                     <a class="dropdown-item" style="color:yellowgreen" href="/chemini-redoc">Redoc</a>
                   </li>
                 </ul>
+              </li>
+              <!--  -->
+              <hr style="margin-top: 1rem">
+              <li class="nav-item">
+                <a class="nav-link" style="color:#779fa0; margin-top:0rem" href="/logout">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-door-open-fill" viewBox="0 0 16 16">
+                    <path d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15H1.5zM11 2h.5a.5.5 0 0 1 .5.5V15h-1V2zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1z"/>
+                  </svg> Wyloguj
+                </a>
               </li>
             </ul>
             <!-- <form class="d-flex mt-3" role="search">
@@ -138,24 +171,47 @@
   <main>
     <div style="text-align:center; margin-left: 3%; margin-right: 3%">
       <h1><b>ADMINISTRACJA</b></h1>
-      <h5><i>admin:  <b>{{ user.name }}</i></b></h5>
+      <!-- <h5><i>admin:  <b>{{ user.name }}</i></b></h5> -->
       <hr>
     </div>
     <div class="row" style="margin:1rem">
-      <div class="col">
+      <div class="col-2" style="margin-top:5rem">
         {% block col1 %}
         {% endblock %}
+        <div>
+          <div>
+            <a class="btn btn-sm btn-outline-info mb-3" href="/admin">panel główny</a>
+          </div>
+          <div>
+            <a class="btn btn-sm btn-outline-info mb-3" href="/admin/users-events">zarządzanie użytkownikami</a>
+          </div>
+          <div>
+            <a class="btn btn-sm btn-outline-info mb-3" href="/admin/">baza danych</a>
+          </div>
+          <div>
+            <a class="btn btn-sm btn-outline-info mb-3" href="/admin/">ruch magazynowy - logi</a>
+          </div>
+        </div>
+        <!-- <ul>
+          <li>zażądzanie użytkownikami</li>
+          <li>logi</li>
+        </ul> -->
       </div>
-      <div class="col-10">
+      <div class="col" style="text-align:center">
         {% block col2 %}
         {% endblock %}
       </div>
-      <div class="col">
+      <div class="col-0">
       {% block col3 %}
       {% endblock %}
       </div>
     </div>
   </main>
+  <!-- <div>
+    <div class="card fixed-bottom" style=" height:10%; margin-left:1%; margin-right:1%; margin-bottom:1%">
+      <li style="margin-left:2%">TEST LOG</li>
+    </div>
+  </div> -->
   <footer>
     <!-- place footer here -->
   </footer>

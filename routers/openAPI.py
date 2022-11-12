@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from configparser import ConfigParser
 from jose import jwt
 from routers.login import oauth2_scheme
+import libs.tokenizer as Tokenizer
 
 
 config = ConfigParser()
@@ -17,6 +18,7 @@ config.read("config/config.ini")
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 hasher = Hasher()
+tokenizer = Tokenizer.Tokenizer()
 
 
 @router.get("/chemini-api/userinfo", tags=['user'])
@@ -29,7 +31,8 @@ def userinfo(db:Session=Depends(get_db), token:str=Depends(oauth2_scheme)):
         return {"msg": "Unauthorized - no token."}
     payload = jwt.decode(token, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
     user = db.query(User).filter(User.name==payload['sub']).first()
-        
+    
+    # user = tokenizer.check_user(token, db)
     if not user:
         return {"msg": "Unauthorized - user not found or bad token."}
     return {"msg": user}

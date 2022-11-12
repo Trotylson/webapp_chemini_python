@@ -11,6 +11,7 @@ from jose import jwt
 from tabulate import tabulate
 from datetime import date
 import time
+import libs.tokenizer as Tokenizer
 
 
 config = ConfigParser()
@@ -20,6 +21,7 @@ config.read("config/config.ini")
 router = APIRouter(include_in_schema=False  )
 templates = Jinja2Templates(directory="templates")
 hasher = Hasher()
+tokenizer = Tokenizer.Tokenizer()
 
 
 
@@ -28,17 +30,9 @@ def call_warehouse_template(request: Request, db:Session=Depends(get_db)):
     """
     Call warehouse page
     """
-    errors = []
         
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -52,7 +46,7 @@ def call_warehouse_template(request: Request, db:Session=Depends(get_db)):
         items_list.append(item)
 
     return templates.TemplateResponse(
-        "warehouse.html",{"request":request, "items": items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+        "warehouse.html",{"request":request, "items": items_list, "user": user})
 
 
 @router.post('/warehouse', tags=['warehouse'])
@@ -67,15 +61,8 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
         
     errors = []
 
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -113,7 +100,7 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
         reg_description = items_list[0].description.replace("_g_nl_", "\n")
         # print(items_list[0].description)
         return templates.TemplateResponse(
-            "warehouse.html",{"request": request, "reg_description":reg_description, "search_item": search_item, "items": items_list, "target":items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+            "warehouse.html",{"request": request, "reg_description":reg_description, "search_item": search_item, "items": items_list, "target":items_list, "user": user})
     
     # items_list2 = []
     # for item in items_list:
@@ -123,7 +110,7 @@ async def search_item(request: Request, db:Session=Depends(get_db)):
     # items_list.description.replace("_g_nl_", "\n")
 
     return templates.TemplateResponse(
-        "warehouse.html",{"request":request, "search_item": search_item, "items": items_list, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+        "warehouse.html",{"request":request, "search_item": search_item, "items": items_list, "user": user})
 
 
 
@@ -133,20 +120,13 @@ def call_additem_template(request: Request, db:Session=Depends(get_db)):
     Call additem page
     """
     
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
     return templates.TemplateResponse(
-        "additem.html",{"request":request, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+        "additem.html",{"request":request, "user": user})
 
 
 @router.get('/demand', tags=['warehouse'])
@@ -155,15 +135,8 @@ def get_page_with_demand(request: Request, db:Session=Depends(get_db)):
     Call additem page
     """
         
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -204,7 +177,7 @@ def get_page_with_demand(request: Request, db:Session=Depends(get_db)):
         print(e)
     
     return templates.TemplateResponse(
-        "demand.html",{"request":request, "used_items": items_used, "new_items": items_new, "user": user.name, "active_status": user.is_active, "is_admin": user.is_admin})
+        "demand.html",{"request":request, "used_items": items_used, "new_items": items_new, "user": user})
 
 
 
@@ -219,15 +192,8 @@ async def edit_item_stack(request: Request, db:Session=Depends(get_db)):
     _quantity = packet['quantity']
 
 
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -270,15 +236,8 @@ async def update_item_params(request: Request, db:Session=Depends(get_db)):
         headers = {'Accept': 'application/json', 'Authorization': 'Bearer token'}
     """
 
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -358,15 +317,8 @@ async def delete_item_row(request: Request, db:Session=Depends(get_db)):
     _id = packet['item_id']
 
 
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -388,15 +340,8 @@ async def add_item(request: Request, db:Session=Depends(get_db)):
     API PUT new item
     """
 
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -407,7 +352,7 @@ async def add_item(request: Request, db:Session=Depends(get_db)):
     _stack_min = packet['stack_min']
     _buy = packet['buy']
     _sell = packet['sell']
-    _description = packet['description']
+    _description = str(packet['description']).replace("_g_nl_", "\n")
     _code = packet['code']
     _used = packet['used']
     
@@ -457,15 +402,8 @@ async def add_item(request: Request, db:Session=Depends(get_db)):
 @router.get("/view-item-moves/{item_id}", tags=['warehose'])
 async def view_item_moves(item_id: int, request: Request, db:Session=Depends(get_db)):
 
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -491,15 +429,8 @@ async def view_item_moves(item_id: int, request: Request, db:Session=Depends(get
 @router.get("/warehouse/view-item/{item_id}", tags=['warehouse'])
 def view_item(item_id: int, request: Request, db: Session=Depends(get_db)):
     
-    token = request.cookies.get("access_token")     # very important line if you want to authenticate user on page
-    if not token:
-        return RedirectResponse("/")
-    try:
-        scheme,_,param = token.partition(" ")
-        payload = jwt.decode(param, config.get("security", "jwt_secret_key"), config.get("security", "algorithm"))
-        user = db.query(User).filter(User.name==payload['sub']).first()
-    except Exception:
-        return RedirectResponse("/")
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_user(token, db)
     if not user:
         return RedirectResponse("/")
 
@@ -519,7 +450,7 @@ def view_item(item_id: int, request: Request, db: Session=Depends(get_db)):
             print(f"date: {item['date']}\nitem ID: {item['item_id']}\nquantity: {item['quantity']}")
 
         item = db.query(Item).filter(Item.id == item_id).first()
-        return templates.TemplateResponse("item.html", {"request": request, "item": item, "item_move": item_table})
+        return templates.TemplateResponse("item.html", {"request": request, "item": item, "item_move": item_table, "user": user})
     
     except Exception as e:
         return {"response": "error", "msg": f"{str(e)}"}

@@ -1,0 +1,11 @@
+Data wykonania: 08/11/2022
+
+nadstan / braki:
+
+zmywacz uniwersalny: -2 szt.
+bremtec: -3 szt.
+
+
+Wartość inwentaryzacji:    63.93,-
+Wartość magazynu przed inwentaryzacją:    159.16,-
+Różnica wartości stanu magazynowego:    -95.22999999999999,-

@@ -13,7 +13,8 @@ $('#button').click(function() {
   stack_min = $('#stack_min').val();
   buy = $('#buy').val();
   sell = $('#sell').val();
-  description = $('#description').val();
+  // description = $('#description').val();
+  description = document.getElementById('description').value;
   code = $('#code').val();
   used = document.getElementById("isused").checked;
 
@@ -26,7 +27,7 @@ $('#button').click(function() {
     "stack_min": stack_min,
     "buy": buy,
     "sell": sell,
-    "description": description = description.replace(/\n/g, "_g_nl_"),
+    "description": description,   //.replace(/\n/g, "_g_nl_"),
     "code": code,
     "used": used
   };

@@ -11,6 +11,76 @@
 <div style="text-align:center">
   <h3><b><i>Panel główny</i></b></h3>
 </div>
+<div class="row" style="margin-top:5%;">
+  <div class="col-1">
+    
+  </div>
+  <div class="col" style="text-align:left">
+    <div class="row">
+      <div class="col">
+        <p><b><i>wartość magazynu: </i></b></p>
+      </div>
+      <div class="col" style="text-align:right">
+        <p><b><i style="color:chartreuse">{{ warehouse_value }},-</i></b></p>
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col">
+        <p><b><i>ilość kartotek towaru: </i></b></p>
+      </div>
+      <div class="col" style="text-align:right">
+        <p><b><i style="color:chartreuse">{{ items_count }}</i></b></p>
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col">
+        <p><b><i>ilość pozycji do zamówienia: </i></b></p>
+      </div>
+      <div class="col" style="text-align:right">
+        <b><i style="color:chartreuse">{{ items_to_order_count }}</i></b>
+      </div>
+      <div class="col" style="text-align:right">
+        {% if items_to_order_count %}
+          <a class="btn btn-outline-info" href="/demand">sprawdź pozycje do zamówienia</a>
+        {% endif %}
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col">
+        <p><b><i>otwarta inwentaryzacja:</i></b></p>
+      </div>
+      <div class="col" style="text-align:right">
+        <b>{% if open_inventory %} <i style="color:red">{{ open_inventory }}</i> {% else %} <i style="color:chartreuse">NIE</i> {% endif %}</b>
+      </div>
+      {% if open_inventory %}
+      <div class="col" style="text-align:right">
+          <a class="btn btn-outline-info" href="/inventory">przejdź do inwentaryzacji</a>
+      </div>
+      {% endif %}
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col">
+        <div><p><b><i>ilość aktywnych użytkowników:</i></b></p></div>
+        <div><p><b><i>ilość nieaktywnych użytkowników:</i></b></p></div>
+      </div>
+      <div class="col" style="text-align:right">
+        <div><p><b><i style="color:chartreuse">{{ active_users_count }}</i></b></p></div>
+        <div><p><b><i style="color:gold">{{ inactive_users_count }}</i></b></p></div>
+      </div>
+      <div class="col" style="text-align:right">
+          <a class="btn btn-outline-info" href="/users-events">sprawdź użytkowników</a>
+      </div>
+    </div>
+    <hr>
+  </div>
+  <div class="col-1">
+
+  </div>
+</div>
 {% endblock %}
 
 {% block col3 %}

@@ -1,0 +1,97 @@
+{% extends "baseadmin.html" %}
+
+{% block title %}
+  <title>.:CHEMINI:. Panel administracyjny</title>
+{% endblock %}
+
+{% block col1 %}
+{% endblock %}
+
+{% block col2 %}
+<div style="text-align:center">
+  <h3><b><i>edycja: {{ user_event.name }}</i></b></h3>
+</div>
+
+<div class="row" style="text-align:center; margin-top:5%">
+  <div class="col">
+
+  </div>
+  <div class="col">
+
+    <hr style="">
+    <h5><b><i>Zmiana podstawowych danych:</i></b></h5>
+    <hr>
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text" id="basic-addon3">email</span>
+      </div>
+      <input type="text" class="form-control" id="newEmail" value="{{ user_event.email }}">
+    </div>
+    
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text" id="basic-addon3">login</span>
+      </div>
+      <input type="text" class="form-control" id="newLogin" value="{{ user_event.name }}">
+    </div>
+    <button class="btn btn-sm btn-outline-info mb-3" id="btnChangeData" onclick="change_data('{{ user_event.id }}')">zmień dane</button>
+    
+    <hr style="margin-top:15%">
+    <h5><b><i>Zmiana hasła:</i></b></h5>
+    <hr>
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text" id="basic-addon3">nowe hasło</span>
+      </div>
+      <input type="text" class="form-control" id="newPassword" value="{{ user_event.password }}">
+    </div>
+    <button class="btn btn-sm btn-outline-info mb-3" id="btnChangePassword" onclick="change_password('{{ user_event.id }}')">zmień hasło</button>
+
+  </div>
+  <div class="col">
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block col3 %}
+{% endblock %}
+
+{% block script %}
+<script>
+    function change_data(id) {
+        if(window.confirm("Czy na pewno chcesz zmienić użytkownikowi te dane?")){
+          var newEmail = document.getElementById('newEmail').value;
+          var newLogin = document.getElementById('newLogin').value;
+
+          fetch("/admin/users-events/"+id+"/update-data", {
+            metchod: "PUT",
+            body: JSON.stringify(data)})
+            .then(response => response.json())
+            .then(result => {
+              console.log(JSON.stringify(result));
+
+              var server_response = result['response']
+              var server_msg = result['msg']
+
+              if (server_response == "success") {
+                  alert(server_msg)
+                }
+              else if(server_response == "error") {
+                resp = server_msg.replace(/\n/g, "<br />")
+                document.getElementById('error').innerHTML = resp;
+              }
+              else {
+                  alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
+  
+            })
+        }
+    }
+    function change_password(id) {
+        if(window.confirm("Czy na pewno chcesz zmienić użytkownikowi hasło?")){
+          
+        }
+    }
+</script>
+{% endblock %}

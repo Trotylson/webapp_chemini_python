@@ -8,6 +8,8 @@ from libs.database import get_db
 from sqlalchemy.exc import IntegrityError
 from configparser import ConfigParser
 import libs.tokenizer as Tokenizer
+import time
+import os
 
 
 config = ConfigParser()
@@ -83,3 +85,105 @@ def load_user_event_page(user_id: int, request: Request, db:Session=Depends(get_
     user_event = db.query(User).filter(User.id == user_id).first()
     
     return templates.TemplateResponse("userevent.html", {"request": request, "user": user_info, "user_event": user_event})
+
+
+@router.post("/admin/users-events/{user_id}/update-data", tags=['admin'])
+async def user_update(user_id: int, request: Request, db:Session=Depends(get_db)):
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_admin(token, db)
+    if not user:
+        return RedirectResponse("/warehouse")
+
+    packet = await request.json()
+    newEmail = packet.get("new_email")
+    newLogin = packet.get("new_login")
+    isActive = packet.get("is_active")
+    isAdmin = packet.get("is_admin")
+
+    payload = {
+        "email": newEmail,
+        "name": newLogin,
+        "is_active": isActive,
+        "is_admin": isAdmin
+
+    }
+    user = db.query(User).filter(User.id == user_id)
+    user.update(payload)
+    db.commit()
+
+    return {"response": "success", "msg": "SUKCES!\nPomyślnie zaktualizowano dane."}
+
+
+@router.post("/admin/users-events/{user_id}/update-password", tags=['admin'])
+async def user_password_update(user_id: int, request: Request, db:Session=Depends(get_db)):
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_admin(token, db)
+    if not user:
+        return RedirectResponse("/warehouse")
+
+    packet = await request.json()
+    newPassword = packet.get("new_password")
+    
+    if not str(newPassword).strip():
+        return {"response": "error", "msg": "BŁĄD!\nKonto bez hasła jest niedozwolone."}
+
+    payload = {
+        "password": hasher.hash_password(newPassword)
+    }
+    user = db.query(User).filter(User.id == user_id)
+    user.update(payload)
+    db.commit()
+
+    return {"response": "success", "msg": "SUKCES!\nPomyślnie zmieniono hasło."}
+
+
+@router.get("/admin/database", tags=['admin'])
+def load_database_template(request: Request, db:Session=Depends(get_db)):
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_admin(token, db)
+    if not user:
+        return RedirectResponse("/warehouse")
+    
+    databases = os.listdir("./backups/database_backups/")
+
+    _time = time.strftime("%d/%m/%Y")
+
+    return templates.TemplateResponse("database.html", {"request": request, "databases": databases, "time": _time, "user": user})
+
+
+@router.post("/admin/database/make-backup", tags=['admin'])
+def make_backup(request: Request, db:Session=Depends(get_db)):
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_admin(token, db)
+    if not user:
+        return RedirectResponse("/warehouse")
+
+    _time = time.strftime("%d-%m-%Y")
+
+    try:
+        with open("./database/main.db", "rb") as database:
+            backup = database.read()
+        with open(f"./backups/database_backups/{_time}.bin", "wb") as new_db:
+            new_db.write(backup)
+
+        return {"response": "success", "msg": "Wykonano kopię zapasową bazy danych z powodzeniem!"}
+    except Exception as e:
+        return {"response": "error", "msg": f"{str(e)}"}
+
+
+@router.post("/admin/database/restore/{db_name}", tags=['admin'])
+def restore_database(db_name: str, request: Request, db:Session=Depends(get_db)):
+    token = request.cookies.get("access_token")
+    user = tokenizer.check_admin(token, db)
+    if not user:
+        return RedirectResponse("/warehouse")
+
+    _time = time.strftime("%H:%M:%S")
+
+    try:
+        with open("./database/main.db", "wb") as database:
+            database.write(open(f"./backups/database_backups/{db_name}", "rb").read())
+
+        return {"response": "success", "msg": f"{_time}\nZ powodzeniem przywrucono bazę {db_name}!"}
+    except Exception as e:
+        return {"response": "error", "msg": f"{str(e)}"}

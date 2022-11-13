@@ -16,41 +16,61 @@
   <div class="col">
 
   </div>
-  <div class="col">
+  <div class="col-10">
 
-    <hr style="">
+    <hr>
     <h5><b><i>Zmiana podstawowych danych:</i></b></h5>
     <hr>
-    <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <span class="input-group-text" id="basic-addon3">email</span>
+    <div class="row">
+      <div class="col">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">email</span>
+          </div>
+          <input type="text" class="form-control" id="newEmail" value="{{ user_event.email }}">
+        </div>
+        
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">login</span>
+          </div>
+          <input type="text" class="form-control" id="newLogin" value="{{ user_event.name }}">
+        </div>
       </div>
-      <input type="text" class="form-control" id="newEmail" value="{{ user_event.email }}">
-    </div>
-    
-    <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <span class="input-group-text" id="basic-addon3">login</span>
+      <div class="col" style="margin-left:20%">
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" checked type="checkbox" id="is_active">
+          <label class="form-check-label" for="is_active"><b>konto aktywne</b></label>
+        </div>
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="is_admin">
+          <label class="form-check-label" for="is_admin"><b style="color:crimson">administrator</b></label>
+        </div>
       </div>
-      <input type="text" class="form-control" id="newLogin" value="{{ user_event.name }}">
     </div>
     <button class="btn btn-sm btn-outline-info mb-3" id="btnChangeData" onclick="change_data('{{ user_event.id }}')">zmień dane</button>
-    
-    <hr style="margin-top:15%">
+  </div>
+  <div class="col">
+
+  </div>
+</div>
+
+<div class="row">
+  <div class="col"></div>
+
+  <div class="col">
+    <hr style="margin-top:5%">
     <h5><b><i>Zmiana hasła:</i></b></h5>
     <hr>
     <div class="input-group mb-3">
       <div class="input-group-prepend">
-        <span class="input-group-text" id="basic-addon3">nowe hasło</span>
+        <span class="input-group-text">nowe hasło</span>
       </div>
-      <input type="text" class="form-control" id="newPassword" value="{{ user_event.password }}">
+      <input type="text" class="form-control" id="newPassword" value="">
     </div>
-    <button class="btn btn-sm btn-outline-info mb-3" id="btnChangePassword" onclick="change_password('{{ user_event.id }}')">zmień hasło</button>
-
-  </div>
-  <div class="col">
-
-  </div>
+    <button class="btn btn-sm btn-outline-info mb-3" id="btnChangePassword" onclick="change_password('{{ user_event.id }}')">zmień hasło</button></div>
+    
+  <div class="col"></div>
 </div>
 
 {% endblock %}
@@ -64,33 +84,81 @@
         if(window.confirm("Czy na pewno chcesz zmienić użytkownikowi te dane?")){
           var newEmail = document.getElementById('newEmail').value;
           var newLogin = document.getElementById('newLogin').value;
+          var isActive = document.getElementById('is_active').checked;
+          var isAdmin = document.getElementById('is_admin').checked;
 
-          fetch("/admin/users-events/"+id+"/update-data", {
-            metchod: "PUT",
-            body: JSON.stringify(data)})
-            .then(response => response.json())
-            .then(result => {
-              console.log(JSON.stringify(result));
+          if(newLogin.trim()){
+            data = {
+              "new_email": newEmail,
+              "new_login": newLogin,
+              "is_active": isActive,
+              "is_admin": isAdmin
+            }
 
-              var server_response = result['response']
-              var server_msg = result['msg']
+            fetch("/admin/users-events/"+id+"/update-data", {
+              method: "POST",
+              body: JSON.stringify(data)})
+              .then(response => response.json())
+              .then(result => {
 
-              if (server_response == "success") {
-                  alert(server_msg)
+                var server_response = result['response']
+                var server_msg = result['msg']
+
+                if (server_response == "success") {
+                    alert(server_msg)
+                    location.replace("/admin/users-events/"+id)
+                  }
+                else if(server_response == "error") {
+                  resp = server_msg.replace(/\n/g, "<br />")
+                  document.getElementById('error').innerHTML = resp;
                 }
-              else if(server_response == "error") {
-                resp = server_msg.replace(/\n/g, "<br />")
-                document.getElementById('error').innerHTML = resp;
-              }
-              else {
-                  alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
-  
+                else {
+                    alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
+    
             })
+          }
+          else{
+            alert("BŁĄD!\nKonto bez loginu jest niedozwolone!");
+            return location.replace("/admin/users-events/"+id);
+          }
         }
     }
     function change_password(id) {
         if(window.confirm("Czy na pewno chcesz zmienić użytkownikowi hasło?")){
-          
+          var newPassword = document.getElementById('newPassword').value;
+
+          if(newPassword.trim()){
+            data = {
+              "new_password": newPassword
+            }
+
+            fetch("/admin/users-events/"+id+"/update-password", {
+              method: "POST",
+              body: JSON.stringify(data)})
+              .then(response => response.json())
+              .then(result => {
+
+                var server_response = result['response']
+                var server_msg = result['msg']
+
+                if (server_response == "success") {
+                    alert(server_msg)
+                    location.replace("/admin/users-events/"+id)
+                  }
+                else if(server_response == "error") {
+                  resp = server_msg.replace(/\n/g, "<br />")
+                  document.getElementById('error').innerHTML = resp;
+                }
+                else {
+                    alert("BŁĄD NIEOKREŚLONY!\nBrak uwzględnionego kodu.\nZakres uwzględnionych błędów (200, 401, 500)")}
+    
+            })
+          }
+          else{
+            alert("BŁĄD!\nKonto bez hasła jest niedozwolone!");
+            return location.replace("/admin/users-events/"+id);
+          }
+
         }
     }
 </script>

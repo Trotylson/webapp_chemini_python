@@ -18,6 +18,7 @@
           <tr>
             <th scope="col">id</th>
             <th scope="col">login</th>
+            <th scope="col">email</th>
             <th scope="col">konto aktywne</th>
             <th scope="col">administrator</th>
             <th scope="col">kartoteka</th>
@@ -28,6 +29,7 @@
           <tr style="color:#102131; background:cadetblue" onclick="select_reference('{{ user.reference }}')" ondblclick="view_item('{{ user.id }}')">
             <td>{{ user.id }}</td>
             <td style="text-align:center"><b>{{ user.name }}</b></td>
+            <td style="text-align:center"><b>{{ user.email }}</b></td>
             <td style="text-align:center">{{ user.is_active }}</td>
             <td style="text-align:center"><b>{{ user.is_admin }}</b></td>
             <td>

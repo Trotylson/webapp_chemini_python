@@ -1,0 +1,106 @@
+{% extends "baseadmin.html" %}
+
+{% block title %}
+  <title>.:CHEMINI:. Panel administracyjny</title>
+{% endblock %}
+
+{% block col1 %}
+{% endblock %}
+
+{% block col2 %}
+<div style="text-align:center">
+  <h3><b><i>Baza danych</i></b></h3>
+</div>
+
+<div class="row">
+    <!-- <div class="col"></div> -->
+
+    <div class="col-8">
+        <div class="container" style="text-align:center">
+            <hr>
+            <b><i>Wykonaj kopię zapasową bazy danych na dzień {{ time }}</i></b>
+            <div>
+                <button class="btn btn-sm btn-outline-info my-3" onclick="make_backup()">wykonaj</button>
+            </div>
+            <hr>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="container" style="text-align:center">
+            <hr>
+            <b><i>Przywróć:</i></b>
+            <div>
+                {% for db in databases %}
+                    <button class="btn btn-sm btn-outline-info" style="margin-top:4%;" ondblclick="restore_database('{{ db }}')">{{ db }}</div>
+                {% endfor %}
+            </div>
+            <hr>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block col3 %}
+{% endblock %}
+
+{% block script %}
+<script>
+    function make_backup() {
+        if(window.confirm("Ta akcja wykona kopię zapasową bazy danych z dzisiejszego dnia, obecnego stanu.\nCzy chcesz kontynuować?"))
+        {
+            fetch("/admin/database/make-backup", {
+                method: "POST"
+            })
+            .then(response => response.json())
+            .then(result => {
+                var msg = result['msg'];
+                var status = result['response']
+
+                if(status == "success")
+                {
+                    alert("SUKCES!\n"+msg);
+                    location.replace("/admin/database")
+                }
+                else if(status == "error")
+                {
+                    alert("BŁĄD!\n"+msg);
+                }
+                else
+                {
+                    alert("NIESPODZIEWANY BŁĄD KRYTYCZNY FUNKCJI!\n"+msg);
+                }
+            })
+        }
+    }
+
+    function restore_database(db)
+    {
+        if(window.confirm("UWAGA KRYTYCZNA OPERACJA!\nCzy na pewno chcesz wprzywrócić stan bazy danych z bazy "+db+"?"))
+        {
+            fetch("/admin/database/restore/"+db, {
+                method: "POST"
+            })
+            .then(response => response.json())
+            .then(result => {
+                var msg = result['msg'];
+                var status = result['response']
+
+                if(status == "success")
+                {
+                    alert("SUKCES!\n"+msg);
+                }
+                else if(status == "error")
+                {
+                    alert("BŁĄD!\n"+msg);
+                }
+                else
+                {
+                    alert("NIESPODZIEWANY BŁĄD KRYTYCZNY!\n"+msg);
+                }
+            })
+        }
+    }
+</script>
+{% endblock %}

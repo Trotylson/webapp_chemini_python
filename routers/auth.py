@@ -19,10 +19,12 @@ hasher = Hasher()
 
 
 @router.get("/", include_in_schema=False)
-def login_page(request: Request, db: Session=Depends(get_db)):
+def login_page(response: Response, request: Request, db: Session=Depends(get_db)):
     """
     login page
     """
+
+    errors = []
 
     token = request.cookies.get("access_token")
     # print(token)
@@ -37,6 +39,11 @@ def login_page(request: Request, db: Session=Depends(get_db)):
             user = db.query(User).filter(User.name==payload['sub']).first()
             if not user:
                 return templates.TemplateResponse("login.html", {"request": request})
+            if user.is_active == False:
+                response.delete_cookie('access_token')
+                errors.append('Konto nieaktywne!')
+                print("Jak nie działa kurwa???")
+                return templates.TemplateResponse("login.html", {'request': request, "errors": errors})
             return RedirectResponse(url="/warehouse")
     except Exception:
         return templates.TemplateResponse("login.html", {"request": request})
@@ -57,8 +64,12 @@ async def login_user(response: Response, request:Request, db:Session=Depends(get
         # print(username, password)
         # print(user.name, user.password)
         if user is None:
-            errors.append(f"No user named {username}")
+            errors.append(f"Login lub hasło niepoprawne!")
             return templates.TemplateResponse("login.html", {"request": request, "errors": errors})
+        if user.is_active == False:
+            errors.append('Konto nieaktywne!')
+            print("Jak nie działa kurwa???")
+            return templates.TemplateResponse("login.html", {'request': request, "errors": errors})
         if hasher.verify_password(password, user.password):
             data = {"sub": username}
             jwt_token = jwt.encode(
@@ -72,7 +83,7 @@ async def login_user(response: Response, request:Request, db:Session=Depends(get
             return response
         else: 
             print("Invalid username or password")
-            errors.append("Invalid username or password")
+            errors.append("Nieprawidłowy login lub hasło!")
             return templates.TemplateResponse("login.html", {"request": request, "errors": errors})
     
     except Exception as e:
